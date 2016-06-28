@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block javascript %}
+    <script src="{% static 'game/javascript/memory.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+    <div>
+        <ul>
+            {% if user.is_authenticated %}
+                <li><a href="/game/memory/">Memory Game</a></li>
+            {% else %}
+
+            {% endif %}
+
+        </ul>
+    </div>
+{% endblock %}

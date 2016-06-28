@@ -11,7 +11,7 @@ from django.http import HttpResponse
 
 # Game page
 def index(request):
-    return render(request, "base.html")
+    return render(request, "home.html")
 
 def login(request):
     if request.method == 'POST':
@@ -22,14 +22,10 @@ def login(request):
             if user is not None and user.is_active:
                 # Correct password, and the user is marked "active"
                 auth.login(request, user)
-                logging.info("Login success: user=%s, keepin=%s" % (username, keep_login))
+                logging.info("Login success: user=%s" % username)
                 return HttpResponseRedirect('/game/')
             else:
-                # Return login failure flag
-                data = {"login": "failure"}
-                json_response = json.dumps(data)
-                logging.info("Login failure: user=%s" % username)
-                return HttpResponse(json_response, content_type='application/json')
+                return render(request, 'home.html', {'login': "false"})
         except:
             logging.info("Error! Received HTTP POST method, but data is wrong.")
             return HttpResponse("Error! Received HTTP POST method, but data is wrong.")
@@ -45,3 +41,7 @@ def logout(request):
         else:
             logging.info("Error! Expecting  POST method!")
             return HttpResponse("Error! Expecting POST method!")
+
+
+def memory(request):
+    return render(request, 'memory.html')
