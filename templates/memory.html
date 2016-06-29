@@ -6,9 +6,29 @@
 {% endblock %}
 
 {% block content %}
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value="0">0%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".50">50%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".70">70%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".80">80%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".85">85%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".90">90%</label>
+    </div>
+
+
     <input type='button' class="btn btn-default" value='Dim!' id='button'/>
     <div id="black">
-        <div id="screen" class="container">
+        <div id="" class="container">
             <div id="picbox" class="">
                   <span id="boxbuttons" class="">
                     <span class="button">
@@ -19,7 +39,9 @@
                       <a onclick="ResetGame();">Reset</a>
                     </span>
                   </span>
+                <div id="screen">
                 <div id="boxcard" class=""></div>
+                </div>
             </div>
         </div>
     </div>

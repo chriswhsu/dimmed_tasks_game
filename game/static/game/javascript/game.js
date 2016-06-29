@@ -4,7 +4,8 @@ $(document).ready(function () {
 
     $(function () {
         var pop = function () {
-            $('#screen').css({opacity: 0.50, 'width': $(document).width(), 'height': $(document).height()});
+            var dimmlevel = 1 - $("input[name=optradio]:checked").val();
+            $('#screen').css({opacity: dimmlevel, 'width': $(document).width(), 'height': $(document).height()});
         };
         $('#button').click(pop);
     });
