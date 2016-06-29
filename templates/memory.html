@@ -2,22 +2,25 @@
 {% load staticfiles %}
 
 {% block javascript %}
-<script src="{% static 'game/javascript/memory.js' %}"></script>
+    <script src="{% static 'game/javascript/memory.js' %}"></script>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-<div id="picbox">
-  <span id="boxbuttons">
-    <span class="button">
-      <span id="counter">0</span>
-      Clicks
-    </span>
-    <span class="button">
-      <a onclick="ResetGame();">Reset</a>
-    </span>
-  </span>
-  <div id="boxcard"></div>
-</div>
-</div>
+    <input type='button' class="btn btn-default" value='Dim!' id='button'/>
+    <div id="black">
+        <div id="screen" class="container">
+            <div id="picbox" class="">
+                  <span id="boxbuttons" class="">
+                    <span class="button">
+                      <span id="counter">0</span>
+                      Clicks
+                    </span>
+                    <span class="button">
+                      <a onclick="ResetGame();">Reset</a>
+                    </span>
+                  </span>
+                <div id="boxcard" class=""></div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

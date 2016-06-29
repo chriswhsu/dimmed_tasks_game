@@ -105,6 +105,8 @@ for (var y = 1; y < 3 ; y++) {
 	$.each(ImgSource, function(i, val) {
 		$(Source).append("<div id=card" + y + i + "><img src=" + val + " />");
 	});
+
+
 }
 	$(Source + " div").click(OpenCard);
 	ShuffleImages();
