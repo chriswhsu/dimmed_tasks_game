@@ -13,6 +13,8 @@
     <title>Game</title>
 
     <!-- Bootstrap core CSS -->
+
+    <link href="{% static '2048-master/style/main.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet" media="screen">
     <link href="{% static 'game/css/memory.css' %}" rel="stylesheet" media="screen">
     <link href="{% static 'game/css/game.css' %}" rel="stylesheet" media="screen">
@@ -63,15 +65,44 @@
 <div class="jumbotron">
     <div class="container">
         <h1>Welcome!</h1>
-        <p>This is a template for a simple marketing or informational website. It includes a large callout called a jumbotron and three supporting pieces of content. Use it as a starting point to
-            create something more unique.</p>
-        <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
+        <p>This is a game where you try to beat your opponents.</p>
     </div>
 </div>
 
+            {% if user.is_authenticated %}
+                <li><a href="/game/memory/">Memory Game</a></li>
+                <li><a href="/game/game_2048/">2048 Game</a></li>
+            {% else %}
 
+            {% endif %}
+
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value="0">0%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".50">50%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".70">70%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".80">80%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".85">85%</label>
+    </div>
+    <div class="radio-inline">
+      <label><input type="radio" name="optradio" value=".90">90%</label>
+    </div>
+
+
+    <input type='button' class="btn btn-default" value='Dim!' id='button'/>
+
+    <div id="black">
+<div id="screen" class="container">
 {% block content %}{% endblock %}
-
+</div>
+    </div>
 
 <!-- Bootstrap core JavaScript
 ================================================== -->
@@ -80,7 +111,6 @@
 <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'game/javascript/game.js' %}"></script>
-<script src="{% static 'dim/jquery.dim-background.min.js' %}"></script>
 {% block javascript %}{% endblock %}
 </body>
 </html>
