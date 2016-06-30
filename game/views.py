@@ -45,3 +45,6 @@ def logout(request):
 
 def memory(request):
     return render(request, 'memory.html')
+
+def game_2048(request):
+    return render(request, 'game_2048.html')

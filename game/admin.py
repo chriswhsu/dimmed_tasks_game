@@ -13,14 +13,13 @@ class TaskTypeAdmin(admin.ModelAdmin):
 admin.site.register(TaskType, TaskTypeAdmin)
 
 
-class GameRoundUserInLine(admin.TabularInline):
-    model = GameRoundUser
-    list_display = ('user', 'name')
+class GamePlanTaskTypeInLine(admin.TabularInline):
+    model = GamePlanTaskType
 
 
-class GameRoundAdmin(admin.ModelAdmin):
-    list_display = ('datetime',)
-    inlines = [GameRoundUserInLine]
+class GamePlanAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    inlines = [GamePlanTaskTypeInLine]
 
 
-admin.site.register(GameRound, GameRoundAdmin)
+admin.site.register(GamePlan, GamePlanAdmin)
