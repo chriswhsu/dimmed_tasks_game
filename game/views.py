@@ -1,17 +1,23 @@
-from django.shortcuts import render
-from django.contrib import auth
-from django.http import HttpResponse
-from django.http import HttpResponseRedirect
-import json
+import datetime
 import logging
+
+from django.contrib import auth
+from django.contrib.auth.models import User
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+
+from game.models import GamePlan, GameRound, GameRoundUser
 # Create your views here.
 
 
 from django.http import HttpResponse
 
+
 # Game page
 def index(request):
-    return render(request, "home.html")
+    game_plans = GamePlan.objects.filter(active=True)
+    return render(request, "home.html", {'game_plans': game_plans})
+
 
 def login(request):
     if request.method == 'POST':
@@ -35,16 +41,48 @@ def login(request):
 
 
 def logout(request):
-        if request.method == 'POST':
-            auth.logout(request)
-            return HttpResponseRedirect('/game/')
-        else:
-            logging.info("Error! Expecting  POST method!")
-            return HttpResponse("Error! Expecting POST method!")
+    if request.method == 'POST':
+        auth.logout(request)
+        return HttpResponseRedirect('/game/')
+    else:
+        logging.info("Error! Expecting  POST method!")
+        return HttpResponse("Error! Expecting POST method!")
+
+
+def run_game(request, plan):
+    game_plan = GamePlan.objects.get(code=plan)
+
+    username = request.user.username
+    user = User.objects.get(username=username)
+
+    now = datetime.datetime.now()
+    game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(hours=1))
+
+    if not game_round:
+        game_round = GameRound(date_time=now, game_plan=game_plan)
+        game_round.save()
+    else:
+        game_round = game_round[0]
+
+    game_round_user = GameRoundUser.objects.filter(game_round=game_round, user=user)
+
+    if not game_round_user:
+        game_round_user = GameRoundUser(game_round=game_round, user=user)
+        game_round_user.save()
+    else:
+        game_round_user = game_round_user[0]
+
+    user_count = GameRoundUser.objects.filter(game_round=game_round).count()
+
+    return render(request, 'run_game.html', {'game_plan': game_plan,
+                                             'game_round': game_round,
+                                             'game_round_user': game_round_user,
+                                             'user_count': user_count})
 
 
 def memory(request):
     return render(request, 'memory.html')
+
 
 def game_2048(request):
     return render(request, 'game_2048.html')

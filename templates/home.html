@@ -9,6 +9,15 @@
     <div>
         <ul>
 
+            {% if user.is_authenticated %}
+
+                {% for gp in game_plans %}
+                    <li><a href="/game/run_game/{{ gp.code }}">{{ gp.name }}</a></li>
+                {% endfor %}
+            {% else %}
+
+            {% endif %}
+
 
         </ul>
     </div>

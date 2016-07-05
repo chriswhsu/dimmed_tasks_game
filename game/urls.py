@@ -6,6 +6,7 @@ urlpatterns = [
     url(r'^login$', views.login, name='login'),
     url(r'^logout$', views.logout, name='logout'),
     url(r'^memory', views.memory, name='memory'),
-    url(r'^game_2048', views.game_2048, name='game_2048')
+    url(r'^game_2048', views.game_2048, name='game_2048'),
+    url(r'^run_game/(?P<plan>[A-z_]+)', views.run_game, name='run_game')
 
 ]

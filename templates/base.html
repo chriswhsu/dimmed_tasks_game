@@ -1,5 +1,6 @@
 {% load staticfiles %}
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,40 +70,14 @@
     </div>
 </div>
 
-            {% if user.is_authenticated %}
-                <li><a href="/game/memory/">Memory Game</a></li>
-                <li><a href="/game/game_2048/">2048 Game</a></li>
-            {% else %}
+{% load tz %}
+{% localtime on %}
 
-            {% endif %}
+{% block content %}
 
-    <div class="radio-inline">
-      <label><input type="radio" name="optradio" value="0">0%</label>
-    </div>
-    <div class="radio-inline">
-      <label><input type="radio" name="optradio" value=".50">50%</label>
-    </div>
-    <div class="radio-inline">
-      <label><input type="radio" name="optradio" value=".70">70%</label>
-    </div>
-    <div class="radio-inline">
-      <label><input type="radio" name="optradio" value=".80">80%</label>
-    </div>
-    <div class="radio-inline">
-      <label><input type="radio" name="optradio" value=".85">85%</label>
-    </div>
-    <div class="radio-inline">
-      <label><input type="radio" name="optradio" value=".90">90%</label>
-    </div>
+{% endblock %}
 
-
-    <input type='button' class="btn btn-default" value='Dim!' id='button'/>
-
-    <div id="black">
-<div id="screen" class="container">
-{% block content %}{% endblock %}
-</div>
-    </div>
+{% endlocaltime %}
 
 <!-- Bootstrap core JavaScript
 ================================================== -->
