@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load tz %}
+{% block javascript %}
+    <script src="{% static 'game/javascript/memory.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div>
+
+        {% if not started %}
+            <h2>Welcome to the {{ game_plan.name }} Round</h2>
+            <h3>Game Start Time: {{ game_round.date_time }}</h3>
+
+            <input class="btn btn-success" type="button" value="Start Game" onclick="location.href='{% url 'start_game' game_round_user.id %}'"/>
+            <h5>There are currently {{ user_count }} users logged into this Game Round </h5>
+
+        {% endif %}
+
+
+        {% if show_user_dim %}
+
+            <div class="radio-inline">
+                <label><input type="radio" name="optradio" value="0">0%</label>
+            </div>
+            <div class="radio-inline">
+                <label><input type="radio" name="optradio" value=".50">50%</label>
+            </div>
+            <div class="radio-inline">
+                <label><input type="radio" name="optradio" value=".70">70%</label>
+            </div>
+            <div class="radio-inline">
+                <label><input type="radio" name="optradio" value=".80">80%</label>
+            </div>
+            <div class="radio-inline">
+                <label><input type="radio" name="optradio" value=".85">85%</label>
+            </div>
+            <div class="radio-inline">
+                <label><input type="radio" name="optradio" value=".90">90%</label>
+            </div>
+
+
+            <input type='button' class="btn btn-default" value='Dim!' id='dim_button'/>
+        {% else %}
+            <div class="hidden" id="dim_level">{{ dim_level }}</div>
+        {% endif %}
+
+        <div class="black">
+            <div id="screen">
+                {% block game %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
