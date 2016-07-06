@@ -79,7 +79,7 @@ def run_game(request, plan):
                                              'game_round_user': game_round_user,
                                              'user_count': user_count,
                                              'show_user_dim': False,
-                                             'dim_level': 0.5})
+                                             'dim_level': 0.6})
 
 
 def memory(request):

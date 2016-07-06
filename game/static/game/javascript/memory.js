@@ -142,5 +142,7 @@ $(document).ready(function () {
         });
     }
 
+
+    $('#resetButton').click(ResetGame);
 });
 
