@@ -74,10 +74,12 @@ def run_game(request, plan):
 
     user_count = GameRoundUser.objects.filter(game_round=game_round).count()
 
-    return render(request, 'run_game.html', {'game_plan': game_plan,
+    return render(request, 'memory.html', {'game_plan': game_plan,
                                              'game_round': game_round,
                                              'game_round_user': game_round_user,
-                                             'user_count': user_count})
+                                             'user_count': user_count,
+                                             'show_user_dim': False,
+                                             'dim_level': 0.5})
 
 
 def memory(request):

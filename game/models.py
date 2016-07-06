@@ -49,7 +49,6 @@ class GameRound(models.Model):
     complete = models.BooleanField(default=False)
 
 
-
 class GameRoundUser(models.Model):
     game_round = models.ForeignKey(GameRound)
     user = models.ForeignKey(User, null=True)
@@ -58,4 +57,11 @@ class GameRoundUser(models.Model):
 
     class Meta:
         unique_together = [('game_round', 'user'),('game_round','fake_user')]
+
+
+class GameRoundUserTask(models.Model):
+    game_round_user = models.ForeignKey(GameRoundUser)
+    game_plan_task_type = models.ForeignKey(GamePlanTaskType)
+    dim_percent = models.FloatField()
+    score = models.IntegerField()
 

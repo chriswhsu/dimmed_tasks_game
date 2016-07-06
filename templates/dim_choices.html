@@ -1,0 +1,32 @@
+    <div>
+        <h2>Welcome to the {{ game_plan.name }} Round</h2>
+        <h3>Game Start Time: {{ game_round.date_time }}</h3>
+
+        <h5>There are currently {{ user_count }} users logged into this Game Round </h5>
+
+
+        <input type='button' class="btn btn-primary" value='Start Game' id='button'/>
+
+
+        <div class="radio-inline">
+            <label><input type="radio" name="optradio" value="0">0%</label>
+        </div>
+        <div class="radio-inline">
+            <label><input type="radio" name="optradio" value=".50">50%</label>
+        </div>
+        <div class="radio-inline">
+            <label><input type="radio" name="optradio" value=".70">70%</label>
+        </div>
+        <div class="radio-inline">
+            <label><input type="radio" name="optradio" value=".80">80%</label>
+        </div>
+        <div class="radio-inline">
+            <label><input type="radio" name="optradio" value=".85">85%</label>
+        </div>
+        <div class="radio-inline">
+            <label><input type="radio" name="optradio" value=".90">90%</label>
+        </div>
+
+
+        <input type='button' class="btn btn-default" value='Dim!' id='button'/>
+    </div>

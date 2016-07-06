@@ -1,15 +1,19 @@
-{% extends "base.html" %}
+{% extends "run_game.html" %}
 {% load staticfiles %}
 
 {% block javascript %}
     <script src="{% static 'game/javascript/memory.js' %}"></script>
 {% endblock %}
 
-{% block content %}
+{% block game %}
+
+    <form name="hidden_data" method="post">
+        <input type="hidden" id="" value="{{ active_tab }}"/>
+    </form>
 
 
-        <div class="container">
-            <div id="picbox" class="">
+    <div class="container">
+        <div id="picbox" class="">
                   <span id="boxbuttons" class="">
                     <span class="button">
                       <span id="counter">0</span>
@@ -19,7 +23,7 @@
                       <a onclick="ResetGame();">Reset</a>
                     </span>
                   </span>
-                <div id="boxcard" class=""></div>
-            </div>
+            <div id="boxcard" class=""></div>
         </div>
+    </div>
 {% endblock %}

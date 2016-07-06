@@ -56,8 +56,8 @@
             {% endif %}
 
             {% if login == "false" %}
-         <div><a class="alert-warning">login failed.</a></div>
-        {% endif %}
+                <div><a class="alert-warning">login failed.</a></div>
+            {% endif %}
         </div><!--/.navbar-collapse -->
     </div>
 </nav>
@@ -73,9 +73,10 @@
 {% load tz %}
 {% localtime on %}
 
-{% block content %}
+    {% block content %}
 
-{% endblock %}
+
+    {% endblock %}
 
 {% endlocaltime %}
 
