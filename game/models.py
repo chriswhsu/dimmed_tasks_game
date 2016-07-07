@@ -62,6 +62,8 @@ class GameRoundUser(models.Model):
 class GameRoundUserTask(models.Model):
     game_round_user = models.ForeignKey(GameRoundUser)
     game_plan_task_type = models.ForeignKey(GamePlanTaskType)
+    start_time = models.DateTimeField()
     dim_percent = models.FloatField()
-    score = models.IntegerField()
+    score = models.IntegerField(null=True)
+    score_log = models.CharField(max_length=200, null=True)
 

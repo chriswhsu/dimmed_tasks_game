@@ -1,12 +1,16 @@
 import datetime
+import json
 import logging
 
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
-from game.models import GamePlan, GameRound, GameRoundUser
+import game.date_time_help as dth
+from game.models import GamePlan, GameRound, GameRoundUser, GamePlanTaskType, GameRoundUserTask
+
 # Create your views here.
 
 
@@ -55,7 +59,7 @@ def run_game(request, plan):
     username = request.user.username
     user = User.objects.get(username=username)
 
-    now = datetime.datetime.now()
+    now = dth.now_cur_tz()
     game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(hours=1))
 
     if not game_round:
@@ -81,13 +85,71 @@ def run_game(request, plan):
 
 
 def start_game(request, game_round_user_id):
-    username = request.user.username
-    user = User.objects.get(username=username)
+    # username = request.user.username
+    # user = User.objects.get(username=username)
+
+    gru = GameRoundUser.objects.get(pk=game_round_user_id)
+    gr = GameRound.objects.get(gamerounduser=gru)
+
+    gp = gr.game_plan
+
+    first_task = GamePlanTaskType.objects.filter(game_plan=gp).order_by('sequence')[:1][0]
+
+    grut, created = GameRoundUserTask.objects.get_or_create(game_round_user=gru,
+                                                            game_plan_task_type=first_task,
+                                                            defaults={'start_time': dth.now_cur_tz(), 'dim_percent': first_task.dim_percent})
+    grut.save()
+
+    return render(request, first_task.task_type.url, {'show_user_dim': first_task.user_defined_dim,
+                                                      'dim_level': first_task.dim_percent / 100,
+                                                      'started': True,
+                                                      'grut': grut})
+
+
+@csrf_exempt
+def next_iteration_ajax(request):
+    if request.is_ajax():
+        if request.user.is_authenticated():
+            if request.method == 'POST':
+                try:
+                    data = json.loads(request.body.decode())
+                    user = User.objects.get(username=request.user.username)
+                    clicks = data['clicks']
+
+                    grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
+
+                    duration = grut.game_plan_task_type.task_duration_seconds
+
+                    elapsed = (dth.now_cur_tz() - grut.start_time).total_seconds()
+
+                    if elapsed > duration:
+                        over = 1
+                    else:
+                        over = 0
+
+                    if not grut.score:
+
+                        grut.score = 1
+                        grut.score_log = str(clicks)
+
+                    else:
+                        grut.score += 1
+                        grut.score_log = grut.score_log + ',' + str(clicks)
+
+                    grut.save()
+
+                    results = {'success': True, 'score': grut.score, 'over': over}
+
+                    json_res = json.dumps(results)
 
 
 
-    return render(request, 'memory.html', {'show_user_dim': False,
-                                           'dim_level': 0.6,
-                                           'started':True})
-
-
+                except:
+                    raise
+                return HttpResponse(json_res, content_type='application/json')
+            else:
+                return HttpResponse("POST ONLY.")
+        else:
+            return HttpResponse("Authenticated usage only.")
+    else:
+        return HttpResponse("Only for ajax usage.")  # Function for page view log

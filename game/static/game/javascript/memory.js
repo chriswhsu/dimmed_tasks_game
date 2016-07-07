@@ -9,10 +9,12 @@ $(document).ready(function () {
 
     var ImgSource = [
         "http://img5.uploadhouse.com/fileuploads/17699/176992640c06707c66a5c0b08a2549c69745dc2c.png",
-        "http://img6.uploadhouse.com/fileuploads/17699/17699263b01721074bf094aa3bc695aa19c8d573.png",
-        "http://img6.uploadhouse.com/fileuploads/17699/17699262833250fa3063b708c41042005fda437d.png",
-        "http://img9.uploadhouse.com/fileuploads/17699/176992615db99bb0fd652a2e6041388b2839a634.png",
-        "http://img4.uploadhouse.com/fileuploads/17699/176992601ca0f28ba4a8f7b41f99ee026d7aaed8.png"
+        "http://img6.uploadhouse.com/fileuploads/17699/17699263b01721074bf094aa3bc695aa19c8d573.png"
+
+        // ,
+        // "http://img6.uploadhouse.com/fileuploads/17699/17699262833250fa3063b708c41042005fda437d.png",
+        // "http://img9.uploadhouse.com/fileuploads/17699/176992615db99bb0fd652a2e6041388b2839a634.png",
+        // "http://img4.uploadhouse.com/fileuploads/17699/176992601ca0f28ba4a8f7b41f99ee026d7aaed8.png"
 
         // ,
         // "http://img3.uploadhouse.com/fileuploads/17699/17699259cb2d70c6882adc285ab8d519658b5dd7.png",
@@ -100,6 +102,7 @@ $(document).ready(function () {
 
             if (ImgFound == ImgSource.length) {
                 $("#counter").prepend('<span id="success">You Found All Pictues With </span>');
+                next_iteration_ajax(Counter);
 
             }
         }
@@ -120,5 +123,47 @@ $(document).ready(function () {
 
 
     $('#resetButton').click(ResetGame);
+
+
+    var dl = 1.0 - $("#dim_level").text();
+    $('#screen').css({opacity: dl, 'width': $(document).width(), 'height': $(document).height()});
+
+    $(function () {
+        var pop = function () {
+            var dimmlevel = 1 - $("input[name=optradio]:checked").val();
+            $('#screen').css({opacity: dimmlevel, 'width': $(document).width(), 'height': $(document).height()});
+        };
+
+        $('#dim_button').click(pop);
+    });
+
+
+    function next_iteration_ajax(clicks) {
+        var data = {
+            'clicks': clicks,
+            'grut_id': $('#grut_id').val()
+        };
+
+        $.ajax({
+            type: 'POST',
+            async: true,
+            url: "/game/next_iteration_ajax/",
+            data: JSON.stringify(data),
+            success: function (response) {
+                if (response.over) {
+                    alert('Round Over!')
+                }
+                else {
+                    ResetGame();
+                    $('#clear_count').html(response.score + " Clears")
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                alert("#next_iteration_ajax: jqXHR= " + jqXHR.status + " " + jqXHR.readyState + ", textStatus= " + textStatus + ", errorThrown= " + errorThrown)
+            }
+        });
+    }
+
+
 });
 
