@@ -105,7 +105,7 @@ def start_game(request, game_round_user_id):
 
     # create the user record for this game round task.
     grut, created = GameRoundUserTask.objects.get_or_create(game_round_user=gru,
-                                                            game_round_task=next_task,
+                                                            game_round_task=grt,
                                                             defaults={'start_time': dth.now_cur_tz(), 'dim_percent': next_task.dim_percent})
     grut.save()
 
@@ -127,7 +127,7 @@ def next_iteration_ajax(request):
 
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
 
-                    duration = grut.game_plan_task_type.task_duration_seconds
+                    duration = grut.game_round_task.game_plan_task_type.task_duration_seconds
 
                     elapsed = (dth.now_cur_tz() - grut.start_time).total_seconds()
 

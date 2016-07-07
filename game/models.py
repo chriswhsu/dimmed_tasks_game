@@ -53,7 +53,7 @@ class GameRoundUser(models.Model):
     game_round = models.ForeignKey(GameRound)
     user = models.ForeignKey(User, null=True)
     fake_user = models.ForeignKey(FakeUser, null=True)
-    game_round_task = models.ManyToManyField(GameRoundTask, through=GameRoundUserTask)
+    game_round_task = models.ManyToManyField("GameRoundTask", through="GameRoundUserTask")
 
     class Meta:
         unique_together = [('game_round', 'user'),('game_round','fake_user')]
@@ -63,7 +63,7 @@ class GameRoundTask(models.Model):
     game_round = models.ForeignKey(GameRound)
     game_plan_task_type = models.ForeignKey(GamePlanTaskType)
     complete = models.BooleanField(default=False)
-    game_round_user = models.ManyToManyField(GameRoundUser, through=GameRoundUserTask)
+    game_round_user = models.ManyToManyField(GameRoundUser, through="GameRoundUserTask")
 
 
 class GameRoundUserTask(models.Model):
