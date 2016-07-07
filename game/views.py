@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 import game.date_time_help as dth
-from game.models import GamePlan, GameRound, GameRoundUser, GamePlanTaskType, GameRoundUserTask
+from game.models import GamePlan, GameRound, GameRoundUser, GamePlanTaskType, GameRoundUserTask, GameRoundTask
 
 # Create your views here.
 
@@ -93,17 +93,26 @@ def start_game(request, game_round_user_id):
 
     gp = gr.game_plan
 
-    first_task = GamePlanTaskType.objects.filter(game_plan=gp).order_by('sequence')[:1][0]
+    # get the first task for this game round that doesn't have a task created.
+    next_task = GamePlanTaskType.objects.filter(game_plan=gp,
+                                                gameroundtask__isnull=True).order_by('sequence')[:1][0]
 
+    # create the task for this game round if it doesn't exist
+    grt, created = GameRoundTask.objects.get_or_create(game_round=gr,
+                                                       game_plan_task_type=next_task
+                                                       )
+    grt.save()
+
+    # create the user record for this game round task.
     grut, created = GameRoundUserTask.objects.get_or_create(game_round_user=gru,
-                                                            game_plan_task_type=first_task,
-                                                            defaults={'start_time': dth.now_cur_tz(), 'dim_percent': first_task.dim_percent})
+                                                            game_round_task=next_task,
+                                                            defaults={'start_time': dth.now_cur_tz(), 'dim_percent': next_task.dim_percent})
     grut.save()
 
-    return render(request, first_task.task_type.url, {'show_user_dim': first_task.user_defined_dim,
-                                                      'dim_level': first_task.dim_percent / 100,
-                                                      'started': True,
-                                                      'grut': grut})
+    return render(request, next_task.task_type.url, {'show_user_dim': next_task.user_defined_dim,
+                                                     'dim_level': next_task.dim_percent / 100,
+                                                     'started': True,
+                                                     'grut': grut})
 
 
 @csrf_exempt
