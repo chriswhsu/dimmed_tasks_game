@@ -66,4 +66,5 @@ class GameRoundUserTask(models.Model):
     dim_percent = models.FloatField()
     score = models.IntegerField(null=True)
     score_log = models.CharField(max_length=200, null=True)
+    complete = models.BooleanField(default=False)
 
