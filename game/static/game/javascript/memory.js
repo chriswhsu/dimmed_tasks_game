@@ -151,7 +151,7 @@ $(document).ready(function () {
             data: JSON.stringify(data),
             success: function (response) {
                 if (response.over) {
-                    alert('Round Over!')
+                    window.location.href = '/game/continue_game/' + $("#game_round_user_task_id").text();
                 }
                 else {
                     ResetGame();

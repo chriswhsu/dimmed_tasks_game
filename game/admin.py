@@ -13,13 +13,13 @@ class TaskTypeAdmin(admin.ModelAdmin):
 admin.site.register(TaskType, TaskTypeAdmin)
 
 
-class GamePlanTaskTypeInLine(admin.TabularInline):
-    model = GamePlanTaskType
+class GamePlanTaskInLine(admin.TabularInline):
+    model = GamePlanTask
 
 
 class GamePlanAdmin(admin.ModelAdmin):
     list_display = ('name',)
-    inlines = [GamePlanTaskTypeInLine]
+    inlines = [GamePlanTaskInLine]
 
 
 admin.site.register(GamePlan, GamePlanAdmin)

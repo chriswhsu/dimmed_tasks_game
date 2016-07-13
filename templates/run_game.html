@@ -44,6 +44,10 @@
             <input type='button' class="btn btn-default" value='Dim!' id='dim_button'/>
         {% else %}
             <div class="hidden" id="dim_level">{{ dim_level }}</div>
+            <div class="hidden" id="game_plan_code">{{ game_plan.code }}</div>
+            <div class="hidden" id="game_round_user_id">{{ game_round_user.id }}</div>
+            <div class="hidden" id="game_round_task_id">{{ game_round_task.id }}</div>
+            <div class="hidden" id="game_round_user_task_id">{{ game_round_user_task.id }}</div>
         {% endif %}
 
         <div class="black">

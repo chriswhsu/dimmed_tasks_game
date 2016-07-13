@@ -9,10 +9,10 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 import game.date_time_help as dth
-from game.models import GamePlan, GameRound, GameRoundUser, GamePlanTaskType, GameRoundUserTask, GameRoundTask
+import game.routines as rt
+from game.models import GamePlan, GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask
 
 # Create your views here.
-
 
 from django.http import HttpResponse
 
@@ -60,11 +60,12 @@ def run_game(request, plan):
     user = User.objects.get(username=username)
 
     now = dth.now_cur_tz()
-    game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(hours=1))
+    game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(minutes=3))
 
     if not game_round:
         game_round = GameRound(date_time=now, game_plan=game_plan)
         game_round.save()
+        rt.create_game_round_tasks(game_plan, game_round)
     else:
         game_round = game_round[0]
 
@@ -89,30 +90,56 @@ def start_game(request, game_round_user_id):
     # user = User.objects.get(username=username)
 
     gru = GameRoundUser.objects.get(pk=game_round_user_id)
-    gr = GameRound.objects.get(gamerounduser=gru)
+    game_round = GameRound.objects.get(gamerounduser=gru)
 
-    gp = gr.game_plan
+    gp = game_round.game_plan
 
-    # get the first task for this game round that doesn't have a task created.
-    next_task = GamePlanTaskType.objects.filter(game_plan=gp,
-                                                gameroundtask__isnull=True).order_by('sequence')[:1][0]
-
-    # create the task for this game round if it doesn't exist
-    grt, created = GameRoundTask.objects.get_or_create(game_round=gr,
-                                                       game_plan_task_type=next_task
-                                                       )
-    grt.save()
+    # get the first task for this game round that is incomplete.
+    grt = GameRoundTask.objects.filter(game_round_id=game_round.id,
+                                       complete=False,
+                                       game_round__complete=False).order_by('game_plan_task__sequence')[:1][0]
 
     # create the user record for this game round task.
     grut, created = GameRoundUserTask.objects.get_or_create(game_round_user=gru,
                                                             game_round_task=grt,
-                                                            defaults={'start_time': dth.now_cur_tz(), 'dim_percent': next_task.dim_percent})
+                                                            defaults={'start_time': dth.now_cur_tz(), 'dim_percent': grt.game_plan_task.dim_percent})
     grut.save()
 
-    return render(request, next_task.task_type.url, {'show_user_dim': next_task.user_defined_dim,
-                                                     'dim_level': next_task.dim_percent / 100,
-                                                     'started': True,
-                                                     'grut': grut})
+    # check to see if all users in this game round have completed the prior task
+
+    return render(request, grt.game_plan_task.task_type.url, {'show_user_dim': grt.game_plan_task.user_defined_dim,
+                                                              'dim_level': grt.game_plan_task.dim_percent / 100,
+                                                              'game_plan': gp,
+                                                              'started': True,
+                                                              'game_round_task': grt,
+                                                              'game_round_user_task': grut,
+                                                              'game_round_user': gru})
+
+
+def continue_game(request, game_round_user_task_id):
+    # username = request.user.username
+    # user = User.objects.get(username=username)
+
+    grut = GameRoundUserTask.objects.get(game_round_user_task_id=game_round_user_task_id)
+
+    grt = grut.game_round_task
+
+    gru = grut.game_round_user
+
+    gr = gru.game_round
+
+    gp = gr.game_plan
+
+    everyone_done = rt.check_for_round_task_complete(grut.game_round_task)
+
+    if everyone_done:
+        start_game(request, game_round_user_id=gru.id)
+    else:
+        return render(request, 'wait.html', {'game_plan': gp,
+                                             'game_round': gr,
+                                             'game_round_user': gru,
+                                             'game_round_task': grt,
+                                             'game_round_user_task': grut})
 
 
 @csrf_exempt
@@ -127,14 +154,16 @@ def next_iteration_ajax(request):
 
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
 
-                    duration = grut.game_round_task.game_plan_task_type.task_duration_seconds
+                    duration = grut.game_round_task.game_plan_task.task_duration_seconds
 
                     elapsed = (dth.now_cur_tz() - grut.start_time).total_seconds()
 
                     if elapsed > duration:
                         over = 1
+                        grut.complete = True
                     else:
                         over = 0
+                        grut.complete = False
 
                     if not grut.score:
 
@@ -145,13 +174,13 @@ def next_iteration_ajax(request):
                         grut.score += 1
                         grut.score_log = grut.score_log + ',' + str(clicks)
 
+                    everyone_done = rt.check_for_round_task_complete(grut.game_round_task)
+
                     grut.save()
 
                     results = {'success': True, 'score': grut.score, 'over': over}
 
                     json_res = json.dumps(results)
-
-
 
                 except:
                     raise

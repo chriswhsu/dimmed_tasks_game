@@ -25,13 +25,13 @@ class GamePlan(models.Model):
     code = models.CharField(max_length=30, primary_key=True)
     name = models.CharField(max_length=30)
     active = models.BooleanField(default=True)
-    tasktype = models.ManyToManyField(TaskType, through="GamePlanTaskType")
+    tasktype = models.ManyToManyField(TaskType, through="GamePlanTask")
 
     def __str__(self):
         return self.name
 
 
-class GamePlanTaskType(models.Model):
+class GamePlanTask(models.Model):
     game_plan = models.ForeignKey(GamePlan)
     task_type = models.ForeignKey(TaskType)
     sequence = models.IntegerField()
@@ -61,7 +61,7 @@ class GameRoundUser(models.Model):
 
 class GameRoundTask(models.Model):
     game_round = models.ForeignKey(GameRound)
-    game_plan_task_type = models.ForeignKey(GamePlanTaskType)
+    game_plan_task = models.ForeignKey(GamePlanTask)
     complete = models.BooleanField(default=False)
     game_round_user = models.ManyToManyField(GameRoundUser, through="GameRoundUserTask")
 
