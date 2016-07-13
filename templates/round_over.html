@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load tz %}
+{% block javascript %}
+    <script src="{% static 'game/javascript/memory.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div>
+        <h1>{{ game_round_user_task.game_round_user.game_round.game_plan.name }} Round: {{ game_round_user_task.game_round_user.game_round.id }} Complete </h1>
+
+        <div class="hidden" id="dim_level">{{ dim_level }}</div>
+        <div class="hidden" id="game_plan_code">{{ game_plan.code }}</div>
+        <div class="hidden" id="game_round_user_id">{{ game_round_user.id }}</div>
+        <div class="hidden" id="game_round_task_id">{{ game_round_task.id }}</div>
+        <div class="hidden" id="game_round_user_task_id">{{ game_round_user_task.id }}</div>
+
+    </div>
+{% endblock %}

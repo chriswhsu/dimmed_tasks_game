@@ -53,14 +53,14 @@ def logout(request):
         return HttpResponse("Error! Expecting POST method!")
 
 
-def run_game(request, plan):
+def run_game(request, plan, continued=False):
     game_plan = GamePlan.objects.get(code=plan)
 
     username = request.user.username
     user = User.objects.get(username=username)
 
     now = dth.now_cur_tz()
-    game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(minutes=3))
+    game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(minutes=20))
 
     if not game_round:
         game_round = GameRound(date_time=now, game_plan=game_plan)
@@ -79,7 +79,8 @@ def run_game(request, plan):
 
     user_count = GameRoundUser.objects.filter(game_round=game_round).count()
 
-    return render(request, 'run_game.html', {'game_plan': game_plan,
+    return render(request, 'run_game.html', {'continued': continued,
+                                             'game_plan': game_plan,
                                              'game_round': game_round,
                                              'game_round_user': game_round_user,
                                              'user_count': user_count})
@@ -132,16 +133,34 @@ def continue_game(request, game_round_user_task_id):
 
     everyone_done = rt.check_for_round_task_complete(grut.game_round_task)
 
-    if everyone_done:
-        return start_game(request, game_round_user_id=gru.id)
+    round_done = rt.check_for_round_complete(gr)
+
+    if not round_done:
+        # get the first task for this game round that is incomplete.
+        next_grt = GameRoundTask.objects.filter(game_round_id=gr.id,
+                                                complete=False,
+                                                game_round__complete=False).order_by('game_plan_task__sequence')[:1][0]
+
+        if everyone_done:
+
+            user_count = GameRoundUser.objects.filter(game_round=gr).count()
+
+            return render(request, 'run_game.html', {'continued': True,
+                                                     'game_plan': gp,
+                                                     'game_round': gr,
+                                                     'game_round_user': gru,
+                                                     'user_count': user_count})
+
+        else:
+            return render(request, 'wait.html', {'started': True,
+                                                 'dim_level': 0,
+                                                 'game_plan': gp,
+                                                 'game_round': gr,
+                                                 'game_round_user': gru,
+                                                 'game_round_task': grt,
+                                                 'game_round_user_task': grut})
     else:
-        return render(request, 'wait.html', {'started': True,
-                                             'dim_level': 0,
-                                             'game_plan': gp,
-                                             'game_round': gr,
-                                             'game_round_user': gru,
-                                             'game_round_task': grt,
-                                             'game_round_user_task': grut})
+        return render(request, 'round_over.html', {'game_round_user_task': grut})
 
 
 @csrf_exempt
@@ -176,9 +195,10 @@ def next_iteration_ajax(request):
                         grut.score += 1
                         grut.score_log = grut.score_log + ',' + str(clicks)
 
-                    everyone_done = rt.check_for_round_task_complete(grut.game_round_task)
-
                     grut.save()
+
+                    rt.check_for_round_task_complete(grut.game_round_task)
+                    rt.check_for_round_complete(grut.game_round_task.game_round)
 
                     results = {'success': True, 'score': grut.score, 'over': over}
 

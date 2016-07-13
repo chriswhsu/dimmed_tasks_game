@@ -1,0 +1,16 @@
+{% extends "run_game.html" %}
+{% load staticfiles %}
+
+{% block javascript %}
+
+    <script>    setTimeout(function () {
+        location.reload()
+    }, 2000);</script>
+{% endblock %}
+
+{% block game %}
+
+    <div class="container">
+        <h1>WAIT for Other Players to Complete this Task</h1>
+    </div>
+{% endblock %}

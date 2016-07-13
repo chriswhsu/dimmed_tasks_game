@@ -9,10 +9,17 @@
     <div>
 
         {% if not started %}
-            <h2>Welcome to the {{ game_plan.name }} Round</h2>
+            {% if not continued %}
+                <h2>Welcome to the {{ game_plan.name }} Round
+            {% endif %}
             <h3>Game Start Time: {{ game_round.date_time }}</h3>
 
-            <input class="btn btn-success" type="button" value="Start Game" onclick="location.href='{% url 'start_game' game_round_user.id %}'"/>
+            {% if  continued %}
+                <input class="btn btn-success" type="button" value="Continue Game" onclick="location.href='{% url 'start_game' game_round_user.id %}'"/>
+            {% else %}
+                <input class="btn btn-success" type="button" value="Start Game" onclick="location.href='{% url 'start_game' game_round_user.id %}'"/>
+            {% endif %}
+
 
             <h5>There are currently {{ user_count }} users logged into this Game Round </h5>
 
