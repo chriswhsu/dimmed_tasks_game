@@ -120,7 +120,7 @@ def continue_game(request, game_round_user_task_id):
     # username = request.user.username
     # user = User.objects.get(username=username)
 
-    grut = GameRoundUserTask.objects.get(game_round_user_task_id=game_round_user_task_id)
+    grut = GameRoundUserTask.objects.get(id=game_round_user_task_id)
 
     grt = grut.game_round_task
 
@@ -133,9 +133,11 @@ def continue_game(request, game_round_user_task_id):
     everyone_done = rt.check_for_round_task_complete(grut.game_round_task)
 
     if everyone_done:
-        start_game(request, game_round_user_id=gru.id)
+        return start_game(request, game_round_user_id=gru.id)
     else:
-        return render(request, 'wait.html', {'game_plan': gp,
+        return render(request, 'wait.html', {'started': True,
+                                             'dim_level': 0,
+                                             'game_plan': gp,
                                              'game_round': gr,
                                              'game_round_user': gru,
                                              'game_round_task': grt,

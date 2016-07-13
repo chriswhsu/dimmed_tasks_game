@@ -141,7 +141,7 @@ $(document).ready(function () {
     function next_iteration_ajax(clicks) {
         var data = {
             'clicks': clicks,
-            'grut_id': $('#grut_id').val()
+            'grut_id': $('#game_round_user_task_id').text()
         };
 
         $.ajax({
