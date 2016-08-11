@@ -11,6 +11,7 @@ def create_game_round_tasks(gp, gr):
         grt.save()
 
 
+# This will check to see if the game round user tasks are complete and if so mark the game round task complete.
 def check_for_round_task_complete(grt):
     complete = True
 
@@ -27,7 +28,7 @@ def check_for_round_task_complete(grt):
     else:
         return False
 
-
+# This will check to see if the game round tasks are complete and if so mark the game round complete.
 def check_for_round_complete(gr):
     complete = True
 
