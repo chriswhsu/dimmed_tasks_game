@@ -170,7 +170,6 @@ def next_iteration_ajax(request):
             if request.method == 'POST':
                 try:
                     data = json.loads(request.body.decode())
-                    user = User.objects.get(username=request.user.username)
                     clicks = data['clicks']
 
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])

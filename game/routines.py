@@ -1,4 +1,4 @@
-from game.models import GamePlanTask, GameRoundUserTask, GameRoundTask
+from game.models import GameRoundUser, GamePlanTask, GameRoundUserTask, GameRoundTask
 
 
 # create the tasks for a given game round based upon the task for the plan being executed.
@@ -10,12 +10,22 @@ def create_game_round_tasks(gp, gr):
         grt = GameRoundTask(game_round=gr, game_plan_task=tk)
         grt.save()
 
+        # get users in this game_round
+
+        users = GameRoundUser.objects.filter(game_round=gr)
+
 
 # This will check to see if the game round user tasks are complete and if so mark the game round task complete.
 def check_for_round_task_complete(grt):
     complete = True
 
     gruts = GameRoundUserTask.objects.filter(game_round_task=grt)
+
+    gru_count = GameRoundUser.objects.filter(game_round=grt.game_round).count()
+
+    # don't have a task for each user yet.
+    if gruts.count() < gru_count:
+        complete = False
 
     for tk in gruts:
         if not tk.complete:
@@ -27,6 +37,7 @@ def check_for_round_task_complete(grt):
         return True
     else:
         return False
+
 
 # This will check to see if the game round tasks are complete and if so mark the game round complete.
 def check_for_round_complete(gr):
