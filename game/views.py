@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import codecs
 
 from django.contrib import auth
 from django.contrib.auth.models import User
@@ -212,3 +213,37 @@ def next_iteration_ajax(request):
             return HttpResponse("Authenticated usage only.")
     else:
         return HttpResponse("Only for ajax usage.")  # Function for page view log
+
+
+@csrf_exempt
+def get_comparison_points(request):
+    if request.is_ajax():
+        if request.user.is_authenticated():
+            if request.method == 'POST':
+
+
+                string = request.body.decode("utf-8")
+                data = json.loads(string)
+                gru_id = data['game_round_user_id']
+
+                gru = GameRoundUser.objects.get(pk=gru_id)
+
+                game_round = gru.game_round
+
+                all_gru = GameRoundUser.objects.filter(game_round=game_round)
+
+                username = request.user.username
+                user = User.objects.get(username=username)
+
+                user_points = dict()
+                for game_round_user in all_gru:
+                    points = rt.calculate_score(game_round_user)
+
+                    user_points[game_round_user.user.username] = [game_round_user.user.username == user.username, points]
+
+                json_response = json.dumps(user_points)
+                return HttpResponse(json_response, content_type='application/json')
+        else:
+            return HttpResponse("Authenticated usage only.")
+    else:
+        return HttpResponse("Only for ajax usage.")

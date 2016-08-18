@@ -55,3 +55,11 @@ def check_for_round_complete(gr):
         return True
     else:
         return False
+
+
+def calculate_score(game_round_user):
+    grut = GameRoundUserTask.objects.filter(game_round_user=game_round_user)
+    score = 0
+    for x in grut:
+        score += x.score
+    return score

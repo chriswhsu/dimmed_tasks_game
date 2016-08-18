@@ -1,4 +1,5 @@
 from django.conf.urls import url
+
 from . import views
 
 urlpatterns = [
@@ -9,7 +10,7 @@ urlpatterns = [
     url(r'^start_game/(?P<game_round_user_id>[0-9]+)', views.start_game, name='start_game'),
     url(r'^continue_game/(?P<game_round_user_task_id>[0-9]+)', views.continue_game, name='continue_game'),
 
-    url(r'^next_iteration_ajax/$', views.next_iteration_ajax, name='next_iteration_ajax')
-
+    url(r'^next_iteration_ajax/$', views.next_iteration_ajax, name='next_iteration_ajax'),
+    url(r'^get_comparison_points/$', views.get_comparison_points)
 
 ]

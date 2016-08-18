@@ -15,6 +15,11 @@
             <h3>Game Start Time: {{ game_round.date_time }}</h3>
 
             {% if  continued %}
+
+                <div>
+                    <div id="compchart" style="min-width: 310px; height: 400px; margin-top: 30"></div>
+                </div>
+
                 <input class="btn btn-success" type="button" value="Continue Game" onclick="location.href='{% url 'start_game' game_round_user.id %}'"/>
             {% else %}
                 <input class="btn btn-success" type="button" value="Start Game" onclick="location.href='{% url 'start_game' game_round_user.id %}'"/>
