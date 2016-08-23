@@ -6,10 +6,10 @@ from django.db import models
 # Create your models here.
 
 class FakeUser(models.Model):
-    name = models.CharField(max_length=30)
-
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=1)
     def __str__(self):
-        return self.name
+        return self.first_name + ' ' + self.last_name
 
 
 class TaskType(models.Model):
@@ -26,6 +26,7 @@ class GamePlan(models.Model):
     name = models.CharField(max_length=30)
     active = models.BooleanField(default=True)
     tasktype = models.ManyToManyField(TaskType, through="GamePlanTask")
+    fake_user_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
