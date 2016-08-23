@@ -254,10 +254,14 @@ def get_comparison_points(request):
                 username = request.user.username
                 user = User.objects.get(username=username)
 
+
+
                 user_points = dict()
                 for game_round_user_task in all_grut:
+                    scaled_score = rt.calculate_scaled_score(game_round_user_task.score,game_round_user_task.dim_percent)
+
                     user_points[game_round_user_task.game_round_user.user.username] = [game_round_user_task.game_round_user.user.username == username,
-                                                                                       game_round_user_task.score,
+                                                                                       scaled_score,
                                                                                        game_round_user_task.dim_percent]
 
                 # sort the dictionary by point score.

@@ -63,3 +63,7 @@ def calculate_score(game_round_user):
     for x in grut:
         score += x.score
     return score
+
+
+def calculate_scaled_score(score, dim_percent):
+    return (100 - dim_percent) * score
