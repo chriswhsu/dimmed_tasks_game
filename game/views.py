@@ -1,7 +1,7 @@
 import datetime
 import json
 import logging
-import codecs
+from collections import OrderedDict
 
 from django.contrib import auth
 from django.contrib.auth.models import User
@@ -109,13 +109,29 @@ def start_game(request, game_round_user_id):
 
     # check to see if all users in this game round have completed the prior task
 
-    return render(request, grt.game_plan_task.task_type.url, {'show_user_dim': grt.game_plan_task.user_defined_dim,
-                                                              'dim_level': grt.game_plan_task.dim_percent / 100,
-                                                              'game_plan': gp,
-                                                              'started': True,
-                                                              'game_round_task': grt,
-                                                              'game_round_user_task': grut,
-                                                              'game_round_user': gru})
+    return render(request, 'run_game.html', {'show_user_dim': grt.game_plan_task.user_defined_dim,
+                                             'dim_level': grt.game_plan_task.dim_percent / 100,
+                                             'started': True,
+                                             'game_round_user_task': grut})
+
+
+def get_going(request, game_round_user_task_id, dim_percent):
+    # username = request.user.username
+    # user = User.objects.get(username=username)
+
+    # Update with start time and dim percentage.
+    grut = GameRoundUserTask.objects.get(pk=game_round_user_task_id)
+
+    grut.start_time = dth.now_cur_tz()
+    grut.dim_percent = int(dim_percent)
+    grut.save()
+
+    # check to see if all users in this game round have completed the prior task
+
+    return render(request, grut.game_round_task.game_plan_task.task_type.url, {'show_user_dim': False,
+                                                                               'dim_level': grut.dim_percent / 100,
+                                                                               'started': True,
+                                                                               'game_round_user_task': grut,})
 
 
 def continue_game(request, game_round_user_task_id):
@@ -150,6 +166,8 @@ def continue_game(request, game_round_user_task_id):
                                                      'game_plan': gp,
                                                      'game_round': gr,
                                                      'game_round_user': gru,
+                                                     'game_round_task': grt,
+                                                     'game_round_user_task': grut,
                                                      'user_count': user_count})
 
         else:
@@ -161,7 +179,11 @@ def continue_game(request, game_round_user_task_id):
                                                  'game_round_task': grt,
                                                  'game_round_user_task': grut})
     else:
-        return render(request, 'round_over.html', {'game_round_user_task': grut})
+        return render(request, 'round_over.html', {'game_plan': gp,
+                                                   'game_round': gr,
+                                                   'game_round_user': gru,
+                                                   'game_round_task': grt,
+                                                   'game_round_user_task': grut})
 
 
 @csrf_exempt
@@ -221,27 +243,27 @@ def get_comparison_points(request):
         if request.user.is_authenticated():
             if request.method == 'POST':
 
-
                 string = request.body.decode("utf-8")
                 data = json.loads(string)
-                gru_id = data['game_round_user_id']
+                grt_id = data['game_round_task_id']
 
-                gru = GameRoundUser.objects.get(pk=gru_id)
+                grt = GameRoundTask.objects.get(pk=grt_id)
 
-                game_round = gru.game_round
-
-                all_gru = GameRoundUser.objects.filter(game_round=game_round)
+                all_grut = GameRoundUserTask.objects.filter(game_round_task=grt)
 
                 username = request.user.username
                 user = User.objects.get(username=username)
 
                 user_points = dict()
-                for game_round_user in all_gru:
-                    points = rt.calculate_score(game_round_user)
+                for game_round_user_task in all_grut:
+                    user_points[game_round_user_task.game_round_user.user.username] = [game_round_user_task.game_round_user.user.username == username,
+                                                                                       game_round_user_task.score,
+                                                                                       game_round_user_task.dim_percent]
 
-                    user_points[game_round_user.user.username] = [game_round_user.user.username == user.username, points]
+                # sort the dictionary by point score.
+                sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))
 
-                json_response = json.dumps(user_points)
+                json_response = json.dumps(sorted_user_points)
                 return HttpResponse(json_response, content_type='application/json')
         else:
             return HttpResponse("Authenticated usage only.")

@@ -17,7 +17,12 @@
             {% if  continued %}
 
                 <div>
-                    <div id="compchart" style="min-width: 310px; height: 400px; margin-top: 30"></div>
+                    <table>
+                        <tr>
+                            <td id="compchart" style="min-width: 310px; height: 400px; margin-top: 30"></td>
+                            <td id="pctchart" style="min-width: 310px; height: 400px; margin-top: 30"></td>
+                        </tr>
+                    </table>
                 </div>
 
                 <input class="btn btn-success" type="button" value="Continue Game" onclick="location.href='{% url 'start_game' game_round_user.id %}'"/>
@@ -33,34 +38,18 @@
 
         {% if show_user_dim %}
 
-            <div class="radio-inline">
-                <label><input type="radio" name="optradio" value="0">0%</label>
-            </div>
-            <div class="radio-inline">
-                <label><input type="radio" name="optradio" value=".50">50%</label>
-            </div>
-            <div class="radio-inline">
-                <label><input type="radio" name="optradio" value=".70">70%</label>
-            </div>
-            <div class="radio-inline">
-                <label><input type="radio" name="optradio" value=".80">80%</label>
-            </div>
-            <div class="radio-inline">
-                <label><input type="radio" name="optradio" value=".85">85%</label>
-            </div>
-            <div class="radio-inline">
-                <label><input type="radio" name="optradio" value=".90">90%</label>
+            <div class="text-center">
+                <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="99" data-slider-step="1" data-slider-value="50"/>
+                <input type='button' class="btn btn-default" value='Dim!' id='dim_button'/>
             </div>
 
-
-            <input type='button' class="btn btn-default" value='Dim!' id='dim_button'/>
         {% else %}
             <div class="hidden" id="dim_level">{{ dim_level }}</div>
-            <div class="hidden" id="game_plan_code">{{ game_plan.code }}</div>
-            <div class="hidden" id="game_round_user_id">{{ game_round_user.id }}</div>
-            <div class="hidden" id="game_round_task_id">{{ game_round_task.id }}</div>
-            <div class="hidden" id="game_round_user_task_id">{{ game_round_user_task.id }}</div>
         {% endif %}
+        <div class="hidden" id="game_plan_code">{{ game_plan.code }}</div>
+        <div class="hidden" id="game_round_user_id">{{ game_round_user.id }}</div>
+        <div class="hidden" id="game_round_task_id">{{ game_round_task.id }}</div>
+        <div class="hidden" id="game_round_user_task_id">{{ game_round_user_task.id }}</div>
 
         <div class="black">
             <div id="screen">

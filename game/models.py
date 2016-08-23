@@ -37,7 +37,7 @@ class GamePlanTask(models.Model):
     sequence = models.IntegerField()
     task_duration_seconds = models.IntegerField(null=True)
     user_defined_dim = models.BooleanField()
-    dim_percent = models.FloatField(null=True, validators=[MaxValueValidator(99),
+    dim_percent = models.FloatField(blank=True, null=True, validators=[MaxValueValidator(99),
                                                            MinValueValidator(0)
                                                            ])
 
@@ -69,7 +69,7 @@ class GameRoundTask(models.Model):
 class GameRoundUserTask(models.Model):
     game_round_user = models.ForeignKey(GameRoundUser)
     game_round_task = models.ForeignKey(GameRoundTask)
-    start_time = models.DateTimeField()
+    start_time = models.DateTimeField(null=True)
     dim_percent = models.FloatField()
     score = models.IntegerField(null=True)
     score_log = models.CharField(max_length=200, null=True)
