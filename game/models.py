@@ -8,6 +8,7 @@ from django.db import models
 class FakeUser(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=1)
+    game_round = models.ForeignKey('GameRound')
     def __str__(self):
         return self.first_name + ' ' + self.last_name
 
@@ -71,7 +72,7 @@ class GameRoundUserTask(models.Model):
     game_round_user = models.ForeignKey(GameRoundUser)
     game_round_task = models.ForeignKey(GameRoundTask)
     start_time = models.DateTimeField(null=True)
-    dim_percent = models.FloatField()
+    dim_percent = models.FloatField(null=True)
     score = models.IntegerField(null=True)
     score_log = models.CharField(max_length=200, null=True)
     complete = models.BooleanField(default=False)

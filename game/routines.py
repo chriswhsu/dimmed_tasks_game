@@ -1,6 +1,7 @@
 import random
+from statistics import mean
 
-from game.models import GameRoundUser, GamePlanTask, GameRoundUserTask, GameRoundTask
+from game.models import GameRoundUser, GamePlanTask, GameRoundUserTask, GameRoundTask, FakeUser
 
 first_names = [
     'Oliver'
@@ -280,6 +281,33 @@ def random_first_last():
     return random.choice(first_names) + ' ' + random.choice(last_initials) + '.'
 
 
+def create_fake_users(game_round, user_count):
+    for x in range(user_count):
+        # create the appropriate number of fake users
+        fu = FakeUser(game_round=game_round, first_name=random.choice(first_names), last_name=random.choice(last_initials))
+        fu.save()
+
+        # and fake GameRoundUsers
+        grfu = GameRoundUser(fake_user=fu, game_round=game_round)
+        grfu.save()
+
+
+def derive_fake_user_dim(other_users_dim_percent):
+    return round(random.triangular(max(min(other_users_dim_percent) - 20, 0),
+                                   min(max(other_users_dim_percent) + 20, 100),
+                                   mean(other_users_dim_percent)))
+
+
+def derive_fake_user_score(other_users_score):
+    return round(random.triangular(max(min(other_users_score) - 3, 0),
+                                   max(other_users_score) + 3,
+                                   mean(other_users_score)))
+
+
+def delete_fake_users(game_round):
+    FakeUser.objects.filter(game_round=game_round).delete()
+
+
 # create the tasks for a given game round based upon the task for the plan being executed.
 def create_game_round_tasks(gp, gr):
     # get the tasks for a given game plan
@@ -294,13 +322,41 @@ def create_game_round_tasks(gp, gr):
         users = GameRoundUser.objects.filter(game_round=gr)
 
 
+def build_fake_grut_scores_and_dim(game_round_task):
+    # get all the fake users
+    game_round_users = GameRoundUser.objects.filter(game_round=game_round_task.game_round,
+                                                    fake_user__isnull=False,
+                                                    )
+
+    game_round_user_tasks = GameRoundUserTask.objects.filter(game_round_task=game_round_task, game_round_user__fake_user__isnull=True)
+
+    scores = []
+    dims = []
+    for grut in game_round_user_tasks:
+        scores.append(grut.score)
+        dims.append(grut.dim_percent)
+
+    for gru in game_round_users:
+
+        try:
+            grut = GameRoundUserTask(game_round_user=gru,
+                                     game_round_task=game_round_task,
+                                     dim_percent=derive_fake_user_dim(dims),
+                                     score=derive_fake_user_score(scores),
+                                     complete=True)
+
+            grut.save()
+        except:
+            pass
+
+
 # This will check to see if the game round user tasks are complete and if so mark the game round task complete.
 def check_for_round_task_complete(grt):
     complete = True
 
-    gruts = GameRoundUserTask.objects.filter(game_round_task=grt)
+    gruts = GameRoundUserTask.objects.filter(game_round_task=grt, game_round_user__fake_user__isnull=True)
 
-    gru_count = GameRoundUser.objects.filter(game_round=grt.game_round).count()
+    gru_count = GameRoundUser.objects.filter(game_round=grt.game_round, fake_user__isnull=True).count()
 
     # don't have a task for each user yet.
     if gruts.count() < gru_count:

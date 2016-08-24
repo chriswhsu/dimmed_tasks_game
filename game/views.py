@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import game.date_time_help as dth
 import game.routines as rt
-from game.models import GamePlan, GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask
+from game.models import GamePlan, GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask, FakeUser
 
 # Create your views here.
 
@@ -61,7 +61,7 @@ def run_game(request, plan, continued=False):
     user = User.objects.get(username=username)
 
     now = dth.now_cur_tz()
-    game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(minutes=20))
+    game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(minutes=5))
 
     if not game_round:
         game_round = GameRound(date_time=now, game_plan=game_plan)
@@ -70,13 +70,14 @@ def run_game(request, plan, continued=False):
     else:
         game_round = game_round[0]
 
-    game_round_user = GameRoundUser.objects.filter(game_round=game_round, user=user)
+    game_round_user, created = GameRoundUser.objects.get_or_create(game_round=game_round, user=user)
+    game_round_user.save()
 
-    if not game_round_user:
-        game_round_user = GameRoundUser(game_round=game_round, user=user)
-        game_round_user.save()
-    else:
-        game_round_user = game_round_user[0]
+    fake_user_count = FakeUser.objects.filter(game_round=game_round).count()
+
+    if fake_user_count < game_plan.fake_user_count:
+        rt.delete_fake_users(game_round)
+        rt.create_fake_users(game_round, game_plan.fake_user_count)
 
     user_count = GameRoundUser.objects.filter(game_round=game_round).count()
 
@@ -107,10 +108,15 @@ def start_game(request, game_round_user_id):
                                                             defaults={'start_time': dth.now_cur_tz(), 'dim_percent': grt.game_plan_task.dim_percent})
     grut.save()
 
+    if not grt.game_plan_task.dim_percent:
+        dim_percent = 0
+    else:
+        dim_percent = grt.game_plan_task.dim_percent
+
     # check to see if all users in this game round have completed the prior task
 
     return render(request, 'run_game.html', {'show_user_dim': grt.game_plan_task.user_defined_dim,
-                                             'dim_level': grt.game_plan_task.dim_percent / 100,
+                                             'dim_level': dim_percent / 100,
                                              'started': True,
                                              'game_round_user_task': grut})
 
@@ -148,7 +154,7 @@ def continue_game(request, game_round_user_task_id):
 
     gp = gr.game_plan
 
-    everyone_done = rt.check_for_round_task_complete(grut.game_round_task)
+    everyone_done_with_task = rt.check_for_round_task_complete(grut.game_round_task)
 
     round_done = rt.check_for_round_complete(gr)
 
@@ -158,9 +164,11 @@ def continue_game(request, game_round_user_task_id):
                                                 complete=False,
                                                 game_round__complete=False).order_by('game_plan_task__sequence')[:1][0]
 
-        if everyone_done:
+        if everyone_done_with_task:
 
             user_count = GameRoundUser.objects.filter(game_round=gr).count()
+
+            rt.build_fake_grut_scores_and_dim(grt)
 
             return render(request, 'run_game.html', {'continued': True,
                                                      'game_plan': gp,
@@ -179,6 +187,9 @@ def continue_game(request, game_round_user_task_id):
                                                  'game_round_task': grt,
                                                  'game_round_user_task': grut})
     else:
+
+        rt.build_fake_grut_scores_and_dim(grt)
+
         return render(request, 'round_over.html', {'game_plan': gp,
                                                    'game_round': gr,
                                                    'game_round_user': gru,
@@ -254,15 +265,23 @@ def get_comparison_points(request):
                 username = request.user.username
                 user = User.objects.get(username=username)
 
-
-
                 user_points = dict()
                 for game_round_user_task in all_grut:
-                    scaled_score = rt.calculate_scaled_score(game_round_user_task.score,game_round_user_task.dim_percent)
+                    scaled_score = rt.calculate_scaled_score(game_round_user_task.score, game_round_user_task.dim_percent)
 
-                    user_points[game_round_user_task.game_round_user.user.username] = [game_round_user_task.game_round_user.user.username == username,
-                                                                                       scaled_score,
-                                                                                       game_round_user_task.dim_percent]
+                    if game_round_user_task.game_round_user.user:
+                        if game_round_user_task.game_round_user.user.username == username:
+                            its_me = True
+                        else:
+                            its_me = False
+                        username = game_round_user_task.game_round_user.user.username
+                    else:
+                        its_me = False
+                        username = game_round_user_task.game_round_user.fake_user.first_name + ' ' + game_round_user_task.game_round_user.fake_user.last_name + '.'
+
+                    user_points[username] = [its_me,
+                                             scaled_score,
+                                             game_round_user_task.dim_percent]
 
                 # sort the dictionary by point score.
                 sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))
