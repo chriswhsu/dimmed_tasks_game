@@ -293,14 +293,14 @@ def create_fake_users(game_round, user_count):
 
 
 def derive_fake_user_dim(other_users_dim_percent):
-    return round(random.triangular(max(min(other_users_dim_percent) - 20, 0),
-                                   min(max(other_users_dim_percent) + 20, 100),
+    return round(random.triangular(max(min(other_users_dim_percent) - 10, 0),
+                                   min(max(other_users_dim_percent) + 10, 95),
                                    mean(other_users_dim_percent)))
 
 
 def derive_fake_user_score(other_users_score):
-    return round(random.triangular(max(min(other_users_score) - 3, 0),
-                                   max(other_users_score) + 3,
+    return round(random.triangular(max(min(other_users_score) - 2, 0),
+                                   max(other_users_score) + 1,
                                    mean(other_users_score)))
 
 

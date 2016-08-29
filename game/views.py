@@ -9,6 +9,10 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
+from django.db.models import Avg
+
+
+
 import game.date_time_help as dth
 import game.routines as rt
 from game.models import GamePlan, GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask, FakeUser
@@ -249,7 +253,7 @@ def next_iteration_ajax(request):
 
 
 @csrf_exempt
-def get_comparison_points(request):
+def get_comparison_points_ajax(request):
     if request.is_ajax():
         if request.user.is_authenticated():
             if request.method == 'POST':
@@ -274,14 +278,66 @@ def get_comparison_points(request):
                             its_me = True
                         else:
                             its_me = False
-                        username = game_round_user_task.game_round_user.user.username
+                        uname = game_round_user_task.game_round_user.user.username
                     else:
                         its_me = False
-                        username = game_round_user_task.game_round_user.fake_user.first_name + ' ' + game_round_user_task.game_round_user.fake_user.last_name + '.'
+                        uname = game_round_user_task.game_round_user.fake_user.first_name + ' ' + game_round_user_task.game_round_user.fake_user.last_name + '.'
 
-                    user_points[username] = [its_me,
+                    user_points[uname] = [its_me,
                                              scaled_score,
                                              game_round_user_task.dim_percent]
+
+                # sort the dictionary by point score.
+                sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))
+
+                json_response = json.dumps(sorted_user_points)
+                return HttpResponse(json_response, content_type='application/json')
+        else:
+            return HttpResponse("Authenticated usage only.")
+    else:
+        return HttpResponse("Only for ajax usage.")
+
+
+@csrf_exempt
+def get_summary_points_ajax(request):
+    if request.is_ajax():
+        if request.user.is_authenticated():
+            if request.method == 'POST':
+
+                string = request.body.decode("utf-8")
+                data = json.loads(string)
+                gr_id = data['game_round_id']
+
+                gr = GameRound.objects.get(pk=gr_id)
+
+                all_gru = GameRoundUser.objects.filter(game_round=gr)
+
+                username = request.user.username
+                user = User.objects.get(username=username)
+
+                user_points = dict()
+                for game_round_user in all_gru:
+
+                    scaled_score = 0
+
+                    for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
+                        scaled_score += rt.calculate_scaled_score(grut.score, grut.dim_percent)
+
+                    avg_dim = GameRoundUserTask.objects.filter(game_round_user=game_round_user).aggregate(Avg('dim_percent'))["dim_percent__avg"]
+
+                    if game_round_user.user:
+                        if game_round_user.user.username == username:
+                            its_me = True
+                        else:
+                            its_me = False
+                        uname = game_round_user.user.username
+                    else:
+                        its_me = False
+                        uname = game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + '.'
+
+                    user_points[uname] = [its_me,
+                                          scaled_score,
+                                          avg_dim]
 
                 # sort the dictionary by point score.
                 sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))

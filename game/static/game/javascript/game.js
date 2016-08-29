@@ -80,7 +80,7 @@ $(document).ready(function () {
         $.ajax({
             type: 'POST',
             async: true,
-            url: "/game/get_comparison_points/",
+            url: "/game/get_comparison_points_ajax/",
             data: JSON.stringify(data),
             success: function (response) {
                 while (compchart.series.length) {
@@ -122,7 +122,7 @@ $(document).ready(function () {
                         });
                     }
                 }
-                compchart.hideLoading();
+                pctchart.hideLoading();
 
             }
         });
@@ -145,6 +145,132 @@ $(document).ready(function () {
 
 
     $('#dim_button').click(get_going);
+    
+    
+    
+    function BuildSummaryChart() {
+        
+        var summarychart = new Highcharts.Chart({
+            chart: {
+                type: 'column',
+                renderTo: 'summarychart',
+                width: '500'
+
+            },
+            title: {
+                text: ''
+            },
+            yAxis: {
+                title: {text: 'Points'}
+            },
+            xAxis: {
+                categories: ['Points'],
+                labels: {
+                    style: {
+                        fontSize: '20px',
+                        fontFamily: 'Verdana, sans-serif'
+                    }
+                }
+
+            },
+            legend: {
+                enabled: false
+            }
+        });
+
+        var sum_pct_chart = new Highcharts.Chart({
+            chart: {
+                type: 'column',
+                renderTo: 'sum_pct_chart',
+                width: '500'
+
+            },
+            title: {
+                text: ''
+            },
+            yAxis: {
+                title: {text: 'Dimmed Pct'}
+            },
+            xAxis: {
+                categories: ['Dimmed Pct'],
+                labels: {
+                    style: {
+                        fontSize: '20px',
+                        fontFamily: 'Verdana, sans-serif'
+                    }
+                }
+
+            },
+            legend: {
+                enabled: false
+            }
+        });
+
+
+        var this_color;
+        summarychart.showLoading();
+
+        var data = {
+            'game_round_id': $("#game_round_id").text()
+        };
+
+
+        $.ajax({
+            type: 'POST',
+            async: true,
+            url: "/game/get_summary_points_ajax/",
+            data: JSON.stringify(data),
+            success: function (response) {
+                while (summarychart.series.length) {
+                    summarychart.series[0].remove(redraw = false);
+                }
+                for (var key in response) {
+                    if (response.hasOwnProperty(key)) {
+                        if (response[key].slice(0, 1) == 'true') {
+                            this_color = 'blue'
+                        }
+                        else {
+                            this_color = 'lightgrey'
+                        }
+                        summarychart.addSeries({
+                            'color': this_color,
+                            'name': key,
+                            'data': response[key].slice(1, 2)
+                        });
+                    }
+                }
+                summarychart.hideLoading();
+
+
+                while (sum_pct_chart.series.length) {
+                    sum_pct_chart.series[0].remove(redraw = false);
+                }
+                for (var key in response) {
+                    if (response.hasOwnProperty(key)) {
+                        if (response[key].slice(0, 1) == 'true') {
+                            this_color = 'blue'
+                        }
+                        else {
+                            this_color = 'lightgrey'
+                        }
+                        sum_pct_chart.addSeries({
+                            'color': this_color,
+                            'name': key,
+                            'data': response[key].slice(2, 3)
+                        });
+                    }
+                }
+                sum_pct_chart.hideLoading();
+
+            }
+        });
+    }
+
+    if ($('#summarychart').length) {
+        BuildSummaryChart();
+    }
+
+    
 
 });
 
