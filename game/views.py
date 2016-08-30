@@ -14,7 +14,7 @@ from django.db.models import Avg
 
 
 import game.date_time_help as dth
-import game.models as rt
+import game.models as md
 from game.models import GamePlan, GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask, FakeUser
 
 # Create your views here.
@@ -24,8 +24,8 @@ from django.http import HttpResponse
 
 # Game page
 def index(request):
-    game_plans = GamePlan.objects.filter(active=True)
-    return render(request, "home.html", {'game_plans': game_plans})
+    game_rounds = GameRound.objects.filter(complete=False)
+    return render(request, "home.html", {'game_rounds': game_rounds})
 
 
 def login(request):
@@ -58,35 +58,22 @@ def logout(request):
         return HttpResponse("Error! Expecting POST method!")
 
 
-def run_game(request, plan, continued=False):
-    game_plan = GamePlan.objects.get(code=plan)
+def run_game(request, game_round_id, continued=False):
+
+    game_round = GameRound.objects.get(pk=game_round_id)
+
+    md.create_game_round_tasks(game_round)
 
     username = request.user.username
     user = User.objects.get(username=username)
 
-    now = dth.now_cur_tz()
-    game_round = GameRound.objects.filter(complete=False, date_time__lte=now, date_time__gte=now - datetime.timedelta(minutes=5))
-
-    if not game_round:
-        game_round = GameRound(date_time=now, game_plan=game_plan)
-        game_round.save()
-        rt.create_game_round_tasks(game_plan, game_round)
-    else:
-        game_round = game_round[0]
-
     game_round_user, created = GameRoundUser.objects.get_or_create(game_round=game_round, user=user)
     game_round_user.save()
-
-    fake_user_count = FakeUser.objects.filter(game_round=game_round).count()
-
-    if fake_user_count < game_plan.fake_user_count:
-        rt.delete_fake_users(game_round)
-        rt.create_fake_users(game_round, game_plan.fake_user_count)
 
     user_count = GameRoundUser.objects.filter(game_round=game_round).count()
 
     return render(request, 'run_game.html', {'continued': continued,
-                                             'game_plan': game_plan,
+                                             'game_plan': game_round.game_plan,
                                              'game_round': game_round,
                                              'game_round_user': game_round_user,
                                              'user_count': user_count})
@@ -158,9 +145,9 @@ def continue_game(request, game_round_user_task_id):
 
     gp = gr.game_plan
 
-    everyone_done_with_task = rt.check_for_round_task_complete(grut.game_round_task)
+    everyone_done_with_task = md.check_for_round_task_complete(grut.game_round_task)
 
-    round_done = rt.check_for_round_complete(gr)
+    round_done = md.check_for_round_complete(gr)
 
     if not round_done:
         # get the first task for this game round that is incomplete.
@@ -172,7 +159,7 @@ def continue_game(request, game_round_user_task_id):
 
             user_count = GameRoundUser.objects.filter(game_round=gr).count()
 
-            rt.build_fake_grut_scores_and_dim(grt)
+            md.build_fake_grut_scores_and_dim(grt)
 
             return render(request, 'run_game.html', {'continued': True,
                                                      'game_plan': gp,
@@ -192,7 +179,7 @@ def continue_game(request, game_round_user_task_id):
                                                  'game_round_user_task': grut})
     else:
 
-        rt.build_fake_grut_scores_and_dim(grt)
+        md.build_fake_grut_scores_and_dim(grt)
 
         return render(request, 'round_over.html', {'game_plan': gp,
                                                    'game_round': gr,
@@ -234,8 +221,8 @@ def next_iteration_ajax(request):
 
                     grut.save()
 
-                    rt.check_for_round_task_complete(grut.game_round_task)
-                    rt.check_for_round_complete(grut.game_round_task.game_round)
+                    md.check_for_round_task_complete(grut.game_round_task)
+                    md.check_for_round_complete(grut.game_round_task.game_round)
 
                     results = {'success': True, 'score': grut.score, 'over': over}
 
@@ -271,7 +258,7 @@ def get_comparison_points_ajax(request):
 
                 user_points = dict()
                 for game_round_user_task in all_grut:
-                    scaled_score = rt.calculate_scaled_score(game_round_user_task.score, game_round_user_task.dim_percent)
+                    scaled_score = md.calculate_scaled_score(game_round_user_task.score, game_round_user_task.dim_percent)
 
                     if game_round_user_task.game_round_user.user:
                         if game_round_user_task.game_round_user.user.username == username:
@@ -321,7 +308,7 @@ def get_summary_points_ajax(request):
                     scaled_score = 0
 
                     for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
-                        scaled_score += rt.calculate_scaled_score(grut.score, grut.dim_percent)
+                        scaled_score += md.calculate_scaled_score(grut.score, grut.dim_percent)
 
                     avg_dim = GameRoundUserTask.objects.filter(game_round_user=game_round_user).aggregate(Avg('dim_percent'))["dim_percent__avg"]
 

@@ -142,9 +142,9 @@ def derive_fake_user_score(other_users_score):
 
 
 # create the tasks for a given game round based upon the task for the plan being executed.
-def create_game_round_tasks(gp, gr):
+def create_game_round_tasks(gr):
     # get the tasks for a given game plan
-    plan_tasks = GamePlanTask.objects.filter(game_plan=gp)
+    plan_tasks = GamePlanTask.objects.filter(game_plan=gr.game_plan)
 
     for tk in plan_tasks:
         grt = GameRoundTask(game_round=gr, game_plan_task=tk)
