@@ -14,7 +14,7 @@ from django.db.models import Avg
 
 
 import game.date_time_help as dth
-import game.routines as rt
+import game.models as rt
 from game.models import GamePlan, GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask, FakeUser
 
 # Create your views here.

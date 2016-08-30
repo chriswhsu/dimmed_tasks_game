@@ -7,7 +7,7 @@ from game.models import *
 
 class TaskTypeAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'url')
-    list_editable = ('name','url')
+    list_editable = ('name', 'url')
 
 
 admin.site.register(TaskType, TaskTypeAdmin)
@@ -23,3 +23,18 @@ class GamePlanAdmin(admin.ModelAdmin):
 
 
 admin.site.register(GamePlan, GamePlanAdmin)
+
+
+class GameRoundUserInLIne(admin.TabularInline):
+    model = GameRoundUser
+
+
+class GameRoundAdmin(admin.ModelAdmin):
+    list_display = ('name', 'game_plan', 'date_time', 'fake_user_count', 'complete')
+    inlines = [GameRoundUserInLIne]
+
+
+admin.site.register(GameRound, GameRoundAdmin)
+
+
+admin.site.register(GameRoundUser)

@@ -11,8 +11,8 @@
 
             {% if user.is_authenticated %}
 
-                {% for gp in game_plans %}
-                    <li><a href="/game/run_game/{{ gp.code }}">{{ gp.name }}</a></li>
+                {% for gr in game_rounds %}
+                    <li><a href="/game/run_game/{{ gr.pk }}">{{ gr.name }}</a></li>
                 {% endfor %}
             {% else %}
 
