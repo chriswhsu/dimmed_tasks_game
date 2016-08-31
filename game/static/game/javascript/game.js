@@ -144,7 +144,7 @@ $(document).ready(function () {
     }
 
 
-    $('#dim_button').click(get_going);
+    $('#get_going').click(get_going);
     
     
     
