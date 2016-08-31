@@ -36,16 +36,23 @@
         {% endif %}
 
 
-        {% if show_user_dim %}
+        {% if show_user_dim == True %}
 
             <div class="text-center">
+                Please Choose Dim Level:
                 <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="99" data-slider-step="1" data-slider-value="50"/>
-                <input type='button' class="btn btn-default" value='Dim!' id='dim_button'/>
+                <input type='button' class="btn btn-default" value='Go!' id='dim_button'/>
             </div>
 
+        {% elif show_user_dim == False %}
+            This task has been preset to be dimmed to {{ dim_percent }} percent.
+            <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="99" data-slider-enabled="false" data-slider-step="1" data-slider-value="{{ dim_percent }}"/>
+            <input type='button' class="btn btn-default" value='Go!' id='dim_button'/>
         {% else %}
             <div class="hidden" id="dim_level">{{ dim_level }}</div>
         {% endif %}
+
+
         <div class="hidden" id="game_plan_code">{{ game_plan.code }}</div>
         <div class="hidden" id="game_round_user_id">{{ game_round_user.id }}</div>
         <div class="hidden" id="game_round_task_id">{{ game_round_task.id }}</div>

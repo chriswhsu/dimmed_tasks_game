@@ -38,18 +38,14 @@ class GameRoundAdmin(admin.ModelAdmin):
 admin.site.register(GameRound, GameRoundAdmin)
 
 
-
-
-
-
 class GameRoundUserTaskInLine(admin.TabularInline):
     model = GameRoundUserTask
-    fields = ('dim_percent','score','start_time','score_log','complete')
-    readonly_fields = ('start_time','score_log','complete')
+    fields = ('sequence', 'dim_percent', 'score', 'start_time', 'score_log', 'complete')
+    readonly_fields = ('sequence', 'start_time', 'score_log', 'complete')
 
 
 class GameRoundUserAdmin(admin.ModelAdmin):
-    fields = ('game_round','fake_user','user')
+    fields = ('game_round', 'fake_user', 'user')
     readonly_fields = ('game_round',)
     inlines = [GameRoundUserTaskInLine]
 

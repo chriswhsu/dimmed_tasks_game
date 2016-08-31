@@ -1,21 +1,17 @@
-import datetime
 import json
 import logging
 from collections import OrderedDict
 
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.db.models import Avg
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
-from django.db.models import Avg
-
-
-
 import game.date_time_help as dth
 import game.models as md
-from game.models import GamePlan, GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask, FakeUser
+from game.models import GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask
 
 # Create your views here.
 
@@ -59,10 +55,7 @@ def logout(request):
 
 
 def run_game(request, game_round_id, continued=False):
-
     game_round = GameRound.objects.get(pk=game_round_id)
-
-    md.create_game_round_tasks(game_round)
 
     username = request.user.username
     user = User.objects.get(username=username)
@@ -86,8 +79,6 @@ def start_game(request, game_round_user_id):
     gru = GameRoundUser.objects.get(pk=game_round_user_id)
     game_round = GameRound.objects.get(gamerounduser=gru)
 
-    gp = game_round.game_plan
-
     # get the first task for this game round that is incomplete.
     grt = GameRoundTask.objects.filter(game_round_id=game_round.id,
                                        complete=False,
@@ -96,6 +87,7 @@ def start_game(request, game_round_user_id):
     # create the user record for this game round task.
     grut, created = GameRoundUserTask.objects.get_or_create(game_round_user=gru,
                                                             game_round_task=grt,
+                                                            sequence=grt.sequence,
                                                             defaults={'start_time': dth.now_cur_tz(), 'dim_percent': grt.game_plan_task.dim_percent})
     grut.save()
 
@@ -107,7 +99,7 @@ def start_game(request, game_round_user_id):
     # check to see if all users in this game round have completed the prior task
 
     return render(request, 'run_game.html', {'show_user_dim': grt.game_plan_task.user_defined_dim,
-                                             'dim_level': dim_percent / 100,
+                                             'dim_percent':dim_percent,
                                              'started': True,
                                              'game_round_user_task': grut})
 
@@ -125,8 +117,7 @@ def get_going(request, game_round_user_task_id, dim_percent):
 
     # check to see if all users in this game round have completed the prior task
 
-    return render(request, grut.game_round_task.game_plan_task.task_type.url, {'show_user_dim': False,
-                                                                               'dim_level': grut.dim_percent / 100,
+    return render(request, grut.game_round_task.game_plan_task.task_type.url, {'dim_level': grut.dim_percent / 100,
                                                                                'started': True,
                                                                                'game_round_user_task': grut,})
 
@@ -271,8 +262,8 @@ def get_comparison_points_ajax(request):
                         uname = game_round_user_task.game_round_user.fake_user.first_name + ' ' + game_round_user_task.game_round_user.fake_user.last_name + '.'
 
                     user_points[uname] = [its_me,
-                                             scaled_score,
-                                             game_round_user_task.dim_percent]
+                                          scaled_score,
+                                          game_round_user_task.dim_percent]
 
                 # sort the dictionary by point score.
                 sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))

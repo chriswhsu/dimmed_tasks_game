@@ -61,8 +61,22 @@ class GameRound(models.Model):
     def save(self, *args, **kwargs):
         super(GameRound, self).save(*args, **kwargs)  # Call the "real" save() method.
 
-        uc = GameRoundUser.objects.filter(game_round=self, fake_user__isnull=False).count()
+        self.create_game_round_tasks()
+        self.create_fake_grus_and_gruts()
 
+    def create_game_round_tasks(self):
+        grt_count = GameRoundTask.objects.filter(game_round=self).count()
+
+        plan_tasks = GamePlanTask.objects.filter(game_plan=self.game_plan)
+
+        if grt_count < plan_tasks.count():
+
+            for task in plan_tasks:
+                grt = GameRoundTask(game_round=self, game_plan_task=task, sequence=task.sequence)
+                grt.save()
+
+    def create_fake_grus_and_gruts(self):
+        uc = GameRoundUser.objects.filter(game_round=self, fake_user__isnull=False).count()
         if uc == self.fake_user_count:
             pass
 
@@ -78,6 +92,10 @@ class GameRound(models.Model):
                 # and fake GameRoundUsers
                 grfu = GameRoundUser(fake_user=fu, game_round=self)
                 grfu.save()
+
+                for y in GameRoundTask.objects.filter(game_round=self):
+                    grfut = GameRoundUserTask(game_round_task=y, game_round_user=grfu, sequence=y.sequence)
+                    grfut.save()
 
 
 class GameRoundUser(models.Model):
@@ -100,6 +118,7 @@ class GameRoundUser(models.Model):
 class GameRoundTask(models.Model):
     game_round = models.ForeignKey(GameRound)
     game_plan_task = models.ForeignKey(GamePlanTask)
+    sequence = models.IntegerField()  # yes, denormalized.
     complete = models.BooleanField(default=False)
     game_round_user = models.ManyToManyField(GameRoundUser, through="GameRoundUserTask")
 
@@ -107,39 +126,23 @@ class GameRoundTask(models.Model):
 class GameRoundUserTask(models.Model):
     game_round_user = models.ForeignKey(GameRoundUser)
     game_round_task = models.ForeignKey(GameRoundTask)
+    sequence = models.IntegerField()  # yes, denormalized.
     start_time = models.DateTimeField(null=True)
-    dim_percent = models.FloatField(null=True)
+    dim_percent = models.FloatField(null=True, validators=[MaxValueValidator(99),
+                                                           MinValueValidator(0)
+                                                           ])
     score = models.IntegerField(null=True)
     score_log = models.CharField(max_length=200, null=True)
     complete = models.BooleanField(default=False)
 
     def __str__(self):
-        return "Seq: " + str(self.game_round_task.game_plan_task.sequence)
+        return self.game_round_task.game_plan_task.task_type.name + " for " + str(self.game_round_task.game_plan_task.task_duration_seconds) + " seconds."
 
     class Meta:
         unique_together = ('game_round_user', 'game_round_task')
 
 
 # =========================================================================================================
-
-
-
-def create_fake_users(game_round, user_count):
-    uc = GameRoundUser.objects.filter(game_round=game_round, fake_user__isnull=False).count()
-
-    if uc == user_count:
-        pass
-
-    else:
-
-        for x in range(user_count):
-            # create the appropriate number of fake users
-            fu = FakeUser(first_name=random.choice(first_names), last_name=random.choice(last_initials))
-            fu.save()
-
-            # and fake GameRoundUsers
-            grfu = GameRoundUser(fake_user=fu, game_round=game_round)
-            grfu.save()
 
 
 def derive_fake_user_dim(other_users_dim_percent):
@@ -154,46 +157,38 @@ def derive_fake_user_score(other_users_score):
                                    mean(other_users_score)))
 
 
-# create the tasks for a given game round based upon the task for the plan being executed.
-def create_game_round_tasks(gr):
-    # get the tasks for a given game plan
-    plan_tasks = GamePlanTask.objects.filter(game_plan=gr.game_plan)
-
-    for tk in plan_tasks:
-        grt = GameRoundTask(game_round=gr, game_plan_task=tk)
-        grt.save()
-
-        # get users in this game_round
-
-        users = GameRoundUser.objects.filter(game_round=gr)
-
-
 def build_fake_grut_scores_and_dim(game_round_task):
+    # get all the real user completed task
+    game_round_user_tasks = GameRoundUserTask.objects.filter(game_round_task=game_round_task, game_round_user__fake_user__isnull=True)
+
+    scores = []
+    dims = []
+
+    # and get the total scores and average dim levels
+    for grut in game_round_user_tasks:
+        scores.append(grut.score)
+        dims.append(grut.dim_percent)
+
     # get all the fake users
     game_round_users = GameRoundUser.objects.filter(game_round=game_round_task.game_round,
                                                     fake_user__isnull=False,
                                                     )
 
-    game_round_user_tasks = GameRoundUserTask.objects.filter(game_round_task=game_round_task, game_round_user__fake_user__isnull=True)
-
-    scores = []
-    dims = []
-    for grut in game_round_user_tasks:
-        scores.append(grut.score)
-        dims.append(grut.dim_percent)
-
     for gru in game_round_users:
+        # get the preciously created fake user task.
+        grfut = GameRoundUserTask.objects.get(game_round_task=game_round_task, game_round_user=gru)
 
-        try:
-            grut = GameRoundUserTask(game_round_user=gru,
-                                     game_round_task=game_round_task,
-                                     dim_percent=derive_fake_user_dim(dims),
-                                     score=derive_fake_user_score(scores),
-                                     complete=True)
+        # populate dim_percent based on real user choices, if not prepopulated
+        if not grfut.dim_percent:
+            grfut.dim_percent = derive_fake_user_dim(dims)
 
-            grut.save()
-        except:
-            pass
+        # populate dim_percent based on real user scores, if not prepopulated
+        if not grfut.score:
+            grfut.score = derive_fake_user_score(scores)
+
+        grfut.complete = True
+
+        grfut.save()
 
 
 # This will check to see if the game round user tasks are complete and if so mark the game round task complete.
