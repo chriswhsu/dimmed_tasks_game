@@ -55,6 +55,9 @@ class GameRound(models.Model):
     complete = models.BooleanField(default=False)
     fake_user_count = models.IntegerField(default=0)
 
+    def __str__(self):
+        return self.name
+
     def save(self, *args, **kwargs):
         super(GameRound, self).save(*args, **kwargs)  # Call the "real" save() method.
 
@@ -83,6 +86,13 @@ class GameRoundUser(models.Model):
     fake_user = models.ForeignKey(FakeUser, null=True, blank=True)
     game_round_task = models.ManyToManyField("GameRoundTask", through="GameRoundUserTask")
 
+    def __str__(self):
+
+        if self.user:
+            return self.game_round.name + ":  " + self.user.username
+        else:
+            return self.game_round.name + ":  " + self.fake_user.first_name + " " + self.fake_user.last_name
+
     class Meta:
         unique_together = [('game_round', 'user'), ('game_round', 'fake_user')]
 
@@ -102,6 +112,9 @@ class GameRoundUserTask(models.Model):
     score = models.IntegerField(null=True)
     score_log = models.CharField(max_length=200, null=True)
     complete = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "Seq: " + str(self.game_round_task.game_plan_task.sequence)
 
     class Meta:
         unique_together = ('game_round_user', 'game_round_task')

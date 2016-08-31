@@ -27,6 +27,7 @@ admin.site.register(GamePlan, GamePlanAdmin)
 
 class GameRoundUserInLIne(admin.TabularInline):
     model = GameRoundUser
+    show_change_link = True
 
 
 class GameRoundAdmin(admin.ModelAdmin):
@@ -37,4 +38,20 @@ class GameRoundAdmin(admin.ModelAdmin):
 admin.site.register(GameRound, GameRoundAdmin)
 
 
-admin.site.register(GameRoundUser)
+
+
+
+
+class GameRoundUserTaskInLine(admin.TabularInline):
+    model = GameRoundUserTask
+    fields = ('dim_percent','score','start_time','score_log','complete')
+    readonly_fields = ('start_time','score_log','complete')
+
+
+class GameRoundUserAdmin(admin.ModelAdmin):
+    fields = ('game_round','fake_user','user')
+    readonly_fields = ('game_round',)
+    inlines = [GameRoundUserTaskInLine]
+
+
+admin.site.register(GameRoundUser, GameRoundUserAdmin)
