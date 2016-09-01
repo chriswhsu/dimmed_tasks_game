@@ -99,7 +99,7 @@ def start_game(request, game_round_user_id):
     # check to see if all users in this game round have completed the prior task
 
     return render(request, 'run_game.html', {'show_user_dim': grt.game_plan_task.user_defined_dim,
-                                             'dim_percent':dim_percent,
+                                             'dim_percent': dim_percent,
                                              'started': True,
                                              'game_round_user_task': grut})
 
@@ -179,6 +179,39 @@ def continue_game(request, game_round_user_task_id):
                                                    'game_round_user_task': grut})
 
 
+# This is only used by the memory game.
+@csrf_exempt
+def send_score_ajax(request):
+    if request.is_ajax():
+        if request.user.is_authenticated():
+            if request.method == 'POST':
+                try:
+                    data = json.loads(request.body.decode())
+                    grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
+
+                    grut.complete = True
+                    grut.score = data['score']
+                    grut.save()
+
+                    md.check_for_round_task_complete(grut.game_round_task)
+                    md.check_for_round_complete(grut.game_round_task.game_round)
+
+                    results = {'success': True, 'score': grut.score, 'over': True}
+
+                    json_res = json.dumps(results)
+
+                except:
+                    raise
+                return HttpResponse(json_res, content_type='application/json')
+            else:
+                return HttpResponse("POST ONLY.")
+        else:
+            return HttpResponse("Authenticated usage only.")
+    else:
+        return HttpResponse("Only for ajax usage.")  # Function for page view log
+
+
+# This is only used by the memory game.
 @csrf_exempt
 def next_iteration_ajax(request):
     if request.is_ajax():
@@ -301,7 +334,7 @@ def get_summary_points_ajax(request):
                     for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
                         scaled_score += md.calculate_scaled_score(grut.score, grut.dim_percent)
 
-                    avg_dim = GameRoundUserTask.objects.filter(game_round_user=game_round_user).aggregate(Avg('dim_percent'))["dim_percent__avg"]
+                    avg_dim = round(GameRoundUserTask.objects.filter(game_round_user=game_round_user).aggregate(Avg('dim_percent'))["dim_percent__avg"], 1)
 
                     if game_round_user.user:
                         if game_round_user.user.username == username:
