@@ -61,6 +61,10 @@
         <div class="black">
             <div id="screen">
                 {% block game %}
+                    <div class="text-center" id="sample_div" >
+                        <h3 class="text-white">Sample Text and Image</h3>
+                        <img id="sample_image" src="{% static 'game/images/sample.gif' %}" width="600" />
+                    </div>
                 {% endblock %}
             </div>
         </div>

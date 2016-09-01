@@ -7,3 +7,15 @@
     margin: 0px -30px;
 }
 
+.text-white{
+    color: white;
+    margin: 10px;
+}
+
+#sample_div{
+    margin: auto;
+}
+
+#sample_image{
+    margin: 20px;
+}
