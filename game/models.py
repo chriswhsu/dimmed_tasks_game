@@ -146,7 +146,7 @@ class Question(models.Model):
     question_text = models.CharField(max_length=500)
 
 
-class QuestionChoices(models.Model):
+class QuestionChoice(models.Model):
     question = models.ForeignKey(Question)
     choice_code = models.CharField(max_length=1)
     choice_text = models.CharField(max_length=400)

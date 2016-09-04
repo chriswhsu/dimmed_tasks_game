@@ -2,6 +2,12 @@ import random
 
 first_names = [
     'Oliver'
+    , 'Emma'
+    , 'Georgette'
+    , 'Mittens'
+    , 'Feline'
+    , 'Tigress'
+    , 'Stella'
     , 'Isabella'
     , 'Aiden'
     , 'Charlotte'
