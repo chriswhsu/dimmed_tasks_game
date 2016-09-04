@@ -1,13 +1,6 @@
 $(document).ready(function () {
     // local variables
 
-    var dim_percentage;
-    var dim_pct = $('#ex1').slider({
-        formatter: function (value) {
-            dim_percentage = value;
-            return 'Dim: ' + value + '%';
-        }
-    });
 
     function BuildPointChart() {
 
@@ -133,10 +126,12 @@ $(document).ready(function () {
         BuildPointChart();
     }
 
+    function set_dim(dim_level) {
+        var dl = 1.0 - (dim_level);
+        $('#screen').css({opacity: dl, 'width': $(document).width(), 'height': $(document).height()});
 
-    var dl = 1.0 - $("#dim_level").text();
-    $('#screen').css({opacity: dl, 'width': $(document).width(), 'height': $(document).height()});
 
+    }
 
     function get_going(clicks) {
 
@@ -144,12 +139,24 @@ $(document).ready(function () {
     }
 
 
+    $("#ex1").on("slide", function (slideEvt) {
+        set_dim(slideEvt.value/100);
+    });
+
     $('#get_going').click(get_going);
-    
-    
-    
+
+
+    var dim_percentage;
+    var dim_pct = $('#ex1').slider({
+        formatter: function (value) {
+            dim_percentage = value;
+            return 'Dim: ' + value + '%';
+        }
+    });
+
+
     function BuildSummaryChart() {
-        
+
         var summarychart = new Highcharts.Chart({
             chart: {
                 type: 'column',
@@ -270,7 +277,8 @@ $(document).ready(function () {
         BuildSummaryChart();
     }
 
-    
+
+    set_dim($("#dim_level").text());
 
 });
 

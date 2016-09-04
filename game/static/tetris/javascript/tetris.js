@@ -219,9 +219,13 @@ function play() {
     reset();
     playing = true;
 }
+
+//  CWHSU Here is where the game ends
 function lose() {
-    show('start');
     setVisualScore();
+        setTimeout(function () {
+            end_game(score)
+        }, 5000);
     playing = false;
 }
 
@@ -480,6 +484,28 @@ function drawBlock(ctx, x, y, color) {
     ctx.fillRect(x * dx, y * dy, dx, dy);
     ctx.strokeRect(x * dx, y * dy, dx, dy)
 }
+
+
+function end_game(p_score) {
+    var data = {
+        'score': p_score,
+        'grut_id': $('#game_round_user_task_id').text()
+    };
+
+    $.ajax({
+        type: 'POST',
+        async: true,
+        url: "/game/send_score_ajax/",
+        data: JSON.stringify(data),
+        success: function (response) {
+            window.location.href = '/game/continue_game/' + $("#game_round_user_task_id").text();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            alert("#next_iteration_ajax: jqXHR= " + jqXHR.status + " " + jqXHR.readyState + ", textStatus= " + textStatus + ", errorThrown= " + errorThrown)
+        }
+    });
+}
+
 
 //-------------------------------------------------------------------------
 // FINALLY, lets run the game

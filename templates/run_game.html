@@ -40,7 +40,7 @@
 
             <div class="text-center">
                 Please Choose Dim Level:
-                <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="99" data-slider-step="1" data-slider-value="50"/>
+                <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="99" data-slider-step="1" data-slider-value="0"/>
                 <input type='button' class="btn btn-default" value='Go!' id='get_going'/>
             </div>
 
@@ -61,10 +61,12 @@
         <div class="black">
             <div id="screen">
                 {% block game %}
-                    <div class="text-center" id="sample_div" >
-                        <h3 class="text-white">Sample Text and Image</h3>
-                        <img id="sample_image" src="{% static 'game/images/sample.gif' %}" width="600" />
-                    </div>
+                    {% if show_user_dim == True %}
+                        <div class="text-center" id="sample_div">
+                            <h3 class="text-white">Sample Text and Image</h3>
+                            <img id="sample_image" src="{% static 'game/images/sample.gif' %}" width="600"/>
+                        </div>
+                    {% endif %}
                 {% endblock %}
             </div>
         </div>
