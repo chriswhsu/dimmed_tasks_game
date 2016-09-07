@@ -177,7 +177,7 @@ insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choi
 
 insert into Game_Question(question_text) values ("The rules of baseball state that a batter Legally Completes His Time at Bat when he is put out or becomes a base runner. Which situation below is the best example of a batter Legally Completing His Time at Bat?");
 insert into variables(primary_key) values ( last_insert_rowid());
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "A","Jared's blooper over the head of the short-stop puts him in scoring position.",1,from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "A","Jared's blooper over the head of the short-stop puts him in scoring position.",1 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B","The umpire calls a strike, even though the last pitch was way outside.",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C","The pitcher throws his famous knuckleball, Joe swings and misses, and the umpire calls a strike.",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D","The count is two balls and two strikes as Mario waits for the next pitch.",0 from variables;
@@ -392,7 +392,7 @@ insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choi
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", "raxmitl",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D", "aplceno",0 from variables;
 
-   delete from variables
+   delete from variables;
 
 insert into Game_Question(question_text) values ("Eileen is planning a special birthday dinner for her husband's 35th birthday. She wants the evening to be memorable, but her husband is a simple man who would rather be in jeans at a baseball game than in a suit at a fancy restaurant. Which restaurant below should Eileen choose?");
 insert into variables(primary_key) values ( last_insert_rowid());
@@ -589,7 +589,7 @@ insert into Game_Question(question_text) values ("One New York publisher has est
 This paragraph best supports the statement that");
 insert into variables(primary_key) values ( last_insert_rowid());
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "A", "Shakespeares characters are more interesting than fictional characters today.",0 from variables;
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B", "people even today are interested in Shakespeare's work because of the characters.", from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B", "people even today are interested in Shakespeare's work because of the characters.",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", "academic scholars are putting together an anthology of Shakespeare's work.",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D", "New Yorkers have a renewed interested in the work of Shakespeare.",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "E", "Shakespeare was a psychiatrist as well as a playwright.",1 from variables;
@@ -860,8 +860,8 @@ insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choi
 insert into Game_Question(question_text) values ("7 - 4 x 3 is equal to");
 insert into variables(primary_key) values ( last_insert_rowid());
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "A", "9",0 from variables;
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B", ""-5",1 from variables;"
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", ""-4",0 from variables;"
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B", "-5",1 from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", "-4",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D", "19",0 from variables;
 
    delete from variables;
