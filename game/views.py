@@ -179,7 +179,7 @@ def continue_game(request, game_round_user_task_id):
                                                    'game_round_user_task': grut})
 
 
-# This is only used by the memory game.
+# This is used by single interation games like tetris and 2048.
 @csrf_exempt
 def send_score_ajax(request):
     if request.is_ajax():
@@ -209,6 +209,61 @@ def send_score_ajax(request):
             return HttpResponse("Authenticated usage only.")
     else:
         return HttpResponse("Only for ajax usage.")  # Function for page view log
+
+
+# This is only used by the Multiple Choice Game
+@csrf_exempt
+def get_question_and_choices(request):
+    if request.is_ajax():
+        if request.user.is_authenticated():
+            if request.method == 'POST':
+                try:
+                    data = json.loads(request.body.decode())
+                    clicks = data['clicks']
+
+                    grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
+
+                    duration = grut.game_round_task.game_plan_task.task_duration_seconds
+
+                    elapsed = (dth.now_cur_tz() - grut.start_time).total_seconds()
+
+                    if elapsed > duration:
+                        over = 1
+                        grut.complete = True
+                    else:
+                        over = 0
+                        grut.complete = False
+
+                    if not grut.score:
+
+                        grut.score = 1
+                        grut.score_log = str(clicks)
+
+                    else:
+                        grut.score += 1
+                        grut.score_log = grut.score_log + ',' + str(clicks)
+
+                    grut.save()
+
+                    md.check_for_round_task_complete(grut.game_round_task)
+                    md.check_for_round_complete(grut.game_round_task.game_round)
+
+                    results = {'success': True, 'score': grut.score, 'over': over}
+
+                    json_res = json.dumps(results)
+
+                except:
+                    raise
+                return HttpResponse(json_res, content_type='application/json')
+            else:
+                return HttpResponse("POST ONLY.")
+        else:
+            return HttpResponse("Authenticated usage only.")
+    else:
+        return HttpResponse("Only for ajax usage.")  # Function for page view log
+
+
+
 
 
 # This is only used by the memory game.

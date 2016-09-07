@@ -74,6 +74,19 @@ class GameRound(models.Model):
             for task in plan_tasks:
                 grt = GameRoundTask(game_round=self, game_plan_task=task, sequence=task.sequence)
                 grt.save()
+                # if it is a multiple choice task
+                if task.task_type.name == "MultipleChoice":
+                    all_questions = Question.objects.all()
+                    the_set = set(range(all_questions.count()))
+                    seq = 0
+                    # create associated questions in random sequence
+                    while len(the_set) > 0:
+                        seq += 1
+                        s = random.choice(list(the_set))
+                        question = all_questions[s]
+                        the_set.remove(s)
+                        grtq = GameRoundTaskQuestion(game_round_task=grt, question=question, question_sequence=seq)
+                        grtq.save()
 
     def create_fake_grus_and_gruts(self):
         uc = GameRoundUser.objects.filter(game_round=self, fake_user__isnull=False).count()
@@ -121,6 +134,12 @@ class GameRoundTask(models.Model):
     sequence = models.IntegerField()  # yes, denormalized.
     complete = models.BooleanField(default=False)
     game_round_user = models.ManyToManyField(GameRoundUser, through="GameRoundUserTask")
+
+
+class GameRoundTaskQuestion(models.Model):
+    game_round_task = models.ForeignKey(GameRoundTask)
+    question_sequence = models.IntegerField()
+    question = models.ForeignKey("Question")
 
 
 class GameRoundUserTask(models.Model):
