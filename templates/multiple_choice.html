@@ -1,0 +1,27 @@
+{% extends "run_game.html" %}
+{% load staticfiles %}
+
+{% block javascript %}
+    <script src="{% static 'game/javascript/multiple_choice.js' %}"></script>
+{% endblock %}
+
+{% block game %}
+
+    <form name="hidden_data" method="post">
+        <input type="hidden" id="grut_id" value="{{ game_round_user_task.id }}"/>
+    </form>
+
+
+    <div class="container">
+        <h3 class="question_text">{{ question.question_text }}</h3>
+        <ul style="list-style-type:none">
+            {% for choice in question_choices %}
+                <li class="question_text">{{ choice.choice_code }}. {{ choice.choice_text }}</li>
+
+            {% endfor %}
+        </ul>
+    </div>
+
+
+
+{% endblock %}

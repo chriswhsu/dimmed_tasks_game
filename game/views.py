@@ -117,7 +117,20 @@ def get_going(request, game_round_user_task_id, dim_percent):
 
     # check to see if all users in this game round have completed the prior task
 
-    return render(request, grut.game_round_task.game_plan_task.task_type.url, {'dim_level': grut.dim_percent / 100,
+    if grut.game_round_task.game_plan_task.task_type.name == 'MultipleChoice':
+
+        grtq = GameRoundTaskQuestion.objects.get(game_round_task=grut.game_round_task, question_sequence=1)
+
+        return render(request, grut.game_round_task.game_plan_task.task_type.url, {'dim_level': grut.dim_percent / 100,
+                                                                                   'started': True,
+                                                                                   'game_round_user_task': grut,
+                                                                                   'question':grtq.question,
+                                                                                   'question_choices':grtq.question.questionchoice_set.all()
+                                                                                   })
+
+    else:
+
+        return render(request, grut.game_round_task.game_plan_task.task_type.url, {'dim_level': grut.dim_percent / 100,
                                                                                'started': True,
                                                                                'game_round_user_task': grut,})
 
@@ -213,7 +226,7 @@ def send_score_ajax(request):
 
 # This is only used by the Multiple Choice Game
 @csrf_exempt
-def get_question_and_choices(request):
+def get_question_and_choices_ajax(request):
     if request.is_ajax():
         if request.user.is_authenticated():
             if request.method == 'POST':
