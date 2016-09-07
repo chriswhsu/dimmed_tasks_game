@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import game.date_time_help as dth
 import game.models as md
-from game.models import GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask
+from game.models import GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask, QuestionChoice, GameRoundTaskQuestion
 
 # Create your views here.
 
@@ -219,9 +219,15 @@ def get_question_and_choices(request):
             if request.method == 'POST':
                 try:
                     data = json.loads(request.body.decode())
-                    clicks = data['clicks']
 
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
+
+                    question_id = data('question_id')
+                    answer_code = data['answer_code']
+
+                    grtq_sequence = GameRoundTaskQuestion.objects.get(question_id=question_id, game_round_task=grut.game_round_task).question_sequence
+
+                    correct = QuestionChoice.objects.filter(question_id=question_id, choice_code=answer_code, correct_choice=True).count()
 
                     duration = grut.game_round_task.game_plan_task.task_duration_seconds
 
@@ -234,21 +240,31 @@ def get_question_and_choices(request):
                         over = 0
                         grut.complete = False
 
+                    # only count correct answers towards score.
                     if not grut.score:
 
-                        grut.score = 1
-                        grut.score_log = str(clicks)
+                        grut.score = correct
 
                     else:
-                        grut.score += 1
-                        grut.score_log = grut.score_log + ',' + str(clicks)
+                        grut.score += correct
 
                     grut.save()
 
-                    md.check_for_round_task_complete(grut.game_round_task)
-                    md.check_for_round_complete(grut.game_round_task.game_round)
+                    if over:
+                        md.check_for_round_task_complete(grut.game_round_task)
+                        md.check_for_round_complete(grut.game_round_task.game_round)
 
-                    results = {'success': True, 'score': grut.score, 'over': over}
+                        results = {'success': True, 'score': grut.score, 'over': over}
+                    else:
+                        # get next question for this task.
+                        grtq = GameRoundTaskQuestion.objects.get(game_round_task=grut.game_round_task, question_sequence=grtq_sequence + 1)
+
+                        choice_list = []
+
+                        for choice in grtq.question.questionchoice_set.all():
+                            choice_list.append({'choice_text': choice.choice_text, 'choice_code': choice.choice_code})
+
+                        results = {'success': True, 'score': grut.score, 'over': over, "question_id": grtq.question_id, "question_text": grtq.question.question_text, "choices": choice_list}
 
                     json_res = json.dumps(results)
 
@@ -261,9 +277,6 @@ def get_question_and_choices(request):
             return HttpResponse("Authenticated usage only.")
     else:
         return HttpResponse("Only for ajax usage.")  # Function for page view log
-
-
-
 
 
 # This is only used by the memory game.
