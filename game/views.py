@@ -235,7 +235,7 @@ def get_question_and_choices_ajax(request):
 
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
 
-                    question_id = data('question_id')
+                    question_id = data['question_id']
                     answer_code = data['answer_code']
 
                     grtq_sequence = GameRoundTaskQuestion.objects.get(question_id=question_id, game_round_task=grut.game_round_task).question_sequence

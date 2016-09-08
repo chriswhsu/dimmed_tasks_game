@@ -7,19 +7,21 @@
 
 {% block game %}
 
-    <form name="hidden_data" method="post">
-        <input type="hidden" id="grut_id" value="{{ game_round_user_task.id }}"/>
-    </form>
-
+    <div class="hidden" id="question_id">{{ question.id }}</div>
 
     <div class="container">
-        <h3 class="question_text">{{ question.question_text }}</h3>
-        <ul style="list-style-type:none">
-            {% for choice in question_choices %}
-                <li class="question_text">{{ choice.choice_code }}. {{ choice.choice_text }}</li>
+        <h3 id="question_text" class="question_text">{{ question.question_text }}</h3>
+        <form id="question_choices" class="question_text" style="list-style-type:none">
 
+            <input type="hidden" id="grut_id" value="{{ game_round_user_task.id }}"/>
+            {% for choice in question_choices %}
+                <input name="choices" type="radio" value="{{ choice.choice_code }}"> {{ choice.choice_text }}<br>
             {% endfor %}
-        </ul>
+
+        </form>
+
+        <button id="make_choice" class="btn btn-default">Click me</button>
+
     </div>
 
 
