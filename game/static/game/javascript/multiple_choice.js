@@ -20,7 +20,20 @@ $(document).ready(function () {
                 }
                 else {
 
-                    $('#clear_count').html(response.score + " Points")
+                    $('#clear_count').html(response.score + " Points");
+                    $('#question_id').html(response.question_id);
+                    $('#question_text').html(response.question_text);
+
+                    var data = response.choices;
+
+                    var items = [];
+
+                    $.each(data, function (i, item) {
+                        items.push('<input name="choices" type="radio" value="' + item.choice_code + '">' + item.choice_text + '<br>');
+                    });
+
+                    $('#choice_list').html(items.join(''));
+
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {

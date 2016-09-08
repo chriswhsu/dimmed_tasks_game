@@ -10,17 +10,19 @@
     <div class="hidden" id="question_id">{{ question.id }}</div>
 
     <div class="container">
+        <span id="clear_count" class="question_text">Score: 0</span>
         <h3 id="question_text" class="question_text">{{ question.question_text }}</h3>
         <form id="question_choices" class="question_text" style="list-style-type:none">
 
             <input type="hidden" id="grut_id" value="{{ game_round_user_task.id }}"/>
-            {% for choice in question_choices %}
-                <input name="choices" type="radio" value="{{ choice.choice_code }}"> {{ choice.choice_text }}<br>
-            {% endfor %}
-
+            <div id="choice_list">
+                {% for choice in question_choices %}
+                    <input name="choices" type="radio" value="{{ choice.choice_code }}"> {{ choice.choice_text }}<br>
+                {% endfor %}
+            </div>
         </form>
 
-        <button id="make_choice" class="btn btn-default">Click me</button>
+        <button id="make_choice" class="btn btn-default">Submit</button>
 
     </div>
 
