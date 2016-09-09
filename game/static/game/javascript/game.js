@@ -140,7 +140,7 @@ $(document).ready(function () {
 
 
     $("#ex1").on("slide", function (slideEvt) {
-        set_dim(slideEvt.value/100);
+        set_dim(slideEvt.value / 100);
     });
 
     $('#get_going').click(get_going);
@@ -155,35 +155,67 @@ $(document).ready(function () {
     });
 
 
+    $('#button').click(function () {
+        BuildSummaryChart();
+    });
+
     function BuildSummaryChart() {
 
-        var summarychart = new Highcharts.Chart({
-            chart: {
-                type: 'column',
-                renderTo: 'summarychart',
-                width: '500'
 
+        var piechart = new Highcharts.Chart({
+            chart: {
+                renderTo: 'piechart',
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie',
+                width: 500
             },
             title: {
-                text: ''
+                text: 'Points for Each User'
             },
-            yAxis: {
-                title: {text: 'Points'}
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
             },
-            xAxis: {
-                categories: ['Points'],
-                labels: {
-                    style: {
-                        fontSize: '20px',
-                        fontFamily: 'Verdana, sans-serif'
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        style: {
+                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                        }
                     }
                 }
-
             },
-            legend: {
-                enabled: false
-            }
+            series: [{
+                name: 'Users',
+                colorByPoint: true,
+                data: [{
+                    name: 'Microsoft IE',
+                    y: 56.33,
+                    sliced: true
+                }, {
+                    name: 'Chrome',
+                    y: 24.03
+                }, {
+                    name: 'Firefox',
+                    y: 10.38
+                }, {
+                    name: 'Safari',
+                    y: 4.77
+                }, {
+                    name: 'Opera',
+                    y: 0.91
+                }, {
+                    name: 'Unknown',
+                    y: 0.2
+                }]
+            }]
         });
+
 
         var sum_pct_chart = new Highcharts.Chart({
             chart: {
@@ -215,7 +247,7 @@ $(document).ready(function () {
 
 
         var this_color;
-        summarychart.showLoading();
+        piechart.showLoading();
 
         var data = {
             'game_round_id': $("#game_round_id").text()
@@ -228,25 +260,21 @@ $(document).ready(function () {
             url: "/game/get_summary_points_ajax/",
             data: JSON.stringify(data),
             success: function (response) {
-                while (summarychart.series.length) {
-                    summarychart.series[0].remove(redraw = false);
+                while (piechart.series.length) {
+                    piechart.series[0].remove(redraw = false);
                 }
+
+                var my_arrary = []
                 for (var key in response) {
-                    if (response.hasOwnProperty(key)) {
-                        if (response[key].slice(0, 1) == 'true') {
-                            this_color = 'blue'
-                        }
-                        else {
-                            this_color = 'lightgrey'
-                        }
-                        summarychart.addSeries({
-                            'color': this_color,
-                            'name': key,
-                            'data': response[key].slice(1, 2)
-                        });
-                    }
+                    my_arrary.push({name: key, y: response[key].slice(1, 2)[0]});
                 }
-                summarychart.hideLoading();
+                piechart.addSeries({
+                    'color': this_color,
+                    'name': key,
+                    'data': my_arrary
+                });
+
+                piechart.hideLoading();
 
 
                 while (sum_pct_chart.series.length) {
@@ -269,16 +297,18 @@ $(document).ready(function () {
                 }
                 sum_pct_chart.hideLoading();
 
+
             }
         });
     }
 
-    if ($('#summarychart').length) {
+    if ($('#piechart').length) {
         BuildSummaryChart();
     }
 
 
     set_dim($("#dim_level").text());
+
 
 });
 

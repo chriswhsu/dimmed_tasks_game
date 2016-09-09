@@ -1,6 +1,6 @@
 delete from variables;
-delete from Game_Question;
 delete from Game_QuestionChoice;
+delete from Game_Question;
 
 
 insert into Game_Question(question_text) values ("Look at this series: 2, 1, (1/2), (1/4), ... What number should come next?");
@@ -271,8 +271,8 @@ agnosdeery means brown spider
 Which word could mean 'black widow spider'?");
 insert into variables(primary_key) values ( last_insert_rowid());
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "A", "deeryclostagnos",0 from variables;
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B", "agnosdelano",1 from variables;
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", "agnosvitriblunin",0 from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B", "agnosdelano",0 from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", "agnosvitriblunin",1 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D", "trymuttiagnos",0 from variables;
 
    delete from variables;
@@ -335,10 +335,10 @@ imodafta means misadvise
 imolokti means misconduct
 Which word could mean 'statement'?");
 insert into variables(primary_key) values ( last_insert_rowid());
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "A", "kratafoni",0 from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "A", "kratafoni",1 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B", "kratadafta",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", "loktifoni",0 from variables;
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D", "daftaimo",1 from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D", "daftaimo",0 from variables;
 
    delete from variables;
 
@@ -376,8 +376,8 @@ Which word could mean 'maple syrup'?");
 insert into variables(primary_key) values ( last_insert_rowid());
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "A", "blymuth",0 from variables;
 insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "B", "hupponot",0 from variables;
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", "patricrin",0 from variables;
-insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D", "crinweel",1 from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "C", "patricrin",1 from variables;
+insert into Game_QuestionChoice(question_id,choice_code,choice_text,correct_choice) select primary_key, "D", "crinweel",0 from variables;
 
    delete from variables;
 

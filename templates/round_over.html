@@ -7,7 +7,7 @@
 
 {% block content %}
     <div>
-        <h1>{{ game_round_user_task.game_round_user.game_round.game_plan.name }} Round: {{ game_round_user_task.game_round_user.game_round.id }} Complete </h1>
+        <h1>Task Complete:</h1>
 
         <div class="hidden" id="dim_level">{{ dim_level }}</div>
         <div class="hidden" id="game_plan_code">{{ game_plan.code }}</div>
@@ -25,13 +25,17 @@
                 <td id="pctchart" style="min-width: 310px; height: 400px; margin-top: 30"></td>
             </tr>
         </table>
-        <h1>{{ game_round_user_task.game_round_user.game_round.game_plan.name }} Complete.  Final Totals & Averages </h1>
+        <h1>Session Complete. Final Totals & Averages:</h1>
         <table>
             <tr>
-                <td id="summarychart" style="min-width: 310px; height: 400px; margin-top: 30"></td>
+                <td id="piechart" style="min-width: 310px; height: 400px; margin-top: 30"></td>
                 <td id="sum_pct_chart" style="min-width: 310px; height: 400px; margin-top: 30"></td>
             </tr>
+            <tr>
+                <td id="summarychart"></td>
+            </tr>
         </table>
+    <button id="button" class="autocompare">Slice</button>
     </div>
 
 {% endblock %}
