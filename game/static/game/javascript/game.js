@@ -127,7 +127,7 @@ $(document).ready(function () {
     }
 
     function set_dim(dim_level) {
-        var dl = 1.0 - (dim_level);
+        var dl = (dim_level);
         $('#screen').css({opacity: dl, 'width': $(document).width(), 'height': $(document).height()});
 
 
@@ -150,7 +150,7 @@ $(document).ready(function () {
     var dim_pct = $('#ex1').slider({
         formatter: function (value) {
             dim_percentage = value;
-            return 'Dim: ' + value + '%';
+            return 'Brightness: ' + value + '%';
         }
     });
 
