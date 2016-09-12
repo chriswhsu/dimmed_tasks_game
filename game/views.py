@@ -408,6 +408,9 @@ def get_summary_points_ajax(request):
                 user = User.objects.get(username=username)
 
                 user_points = dict()
+
+                winning_gru = md.determine_winner(game_round=gr)
+
                 for game_round_user in all_gru:
 
                     scaled_score = 0
@@ -429,12 +432,14 @@ def get_summary_points_ajax(request):
 
                     user_points[uname] = [its_me,
                                           scaled_score,
-                                          brightness]
+                                          brightness,
+                                          winning_gru == game_round_user.id]
 
-                # sort the dictionary by point score.
-                sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))
 
-                json_response = json.dumps(sorted_user_points)
+
+
+
+                json_response = json.dumps(user_points)
                 return HttpResponse(json_response, content_type='application/json')
         else:
             return HttpResponse("Authenticated usage only.")

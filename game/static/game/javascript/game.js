@@ -155,25 +155,30 @@ $(document).ready(function () {
     });
 
 
-    function animate_slices() {
+    function animate_slices(win) {
 
         var segments = piechart.series[0].data.length;
         var tps = 100;
 
-        function slice(segment, loop) {
+        function slice(segment, loop, won) {
             // on the first pass pull the pie slice out.
             setTimeout(function () {
                 piechart.series[0].data[segment].slice()
             }, tps * (qq + 1) + (loop * segments * tps));
 
             // Then push it back in delayed somewhat by the total percentage of points they have.
-            setTimeout(function () {
-                piechart.series[0].data[segment].slice()
-            }, tps * (qq + 1) + (loop * segments * tps) + 50 * piechart.series[0].data[segment].percentage);
+            if (piechart.series[0].data[segment].name == win && loop == 9) {
+            }
+            else {
+                setTimeout(function () {
+                    piechart.series[0].data[segment].slice()
+                }, tps * (qq + 1) + (loop * segments * tps) + 50 * piechart.series[0].data[segment].percentage);
+            }
         }
 
         for (var x = 0; x < 10; x++) {
             for (var qq = 0; qq < segments; qq++) {
+
                 slice(qq, x)
 
             }
@@ -268,10 +273,13 @@ $(document).ready(function () {
                 while (piechart.series.length) {
                     piechart.series[0].remove(redraw = false);
                 }
-
-                var my_arrary = []
+                var winner;
+                var my_arrary = [];
                 for (var key in response) {
-                    my_arrary.push({name: key, y: response[key].slice(1, 2)[0]});
+                    my_arrary.push({name: key, y: response[key].slice(1, 2)[0]})
+                    if (response[key].slice(3, 4)[0] == true) {
+                        winner = key;
+                    }
                 }
                 piechart.addSeries({
                     'name': key,
@@ -279,7 +287,7 @@ $(document).ready(function () {
                 });
 
                 setTimeout(function () {
-                    callback()
+                    callback(winner)
                 }, 1000);
 
                 piechart.hideLoading();

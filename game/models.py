@@ -43,8 +43,8 @@ class GamePlanTask(models.Model):
     task_duration_seconds = models.IntegerField(null=True)
     user_defined_brightness = models.BooleanField()
     brightness = models.FloatField(blank=True, null=True, validators=[MaxValueValidator(100),
-                                                                       MinValueValidator(1)
-                                                                       ])
+                                                                      MinValueValidator(1)
+                                                                      ])
 
 
 # GameRound is a instance of a GamePlan with tasks and users and scores stored within.
@@ -148,8 +148,8 @@ class GameRoundUserTask(models.Model):
     sequence = models.IntegerField()  # yes, denormalized.
     start_time = models.DateTimeField(null=True)
     brightness = models.FloatField(null=True, validators=[MaxValueValidator(100),
-                                                           MinValueValidator(1)
-                                                           ])
+                                                          MinValueValidator(1)
+                                                          ])
     score = models.IntegerField(null=True)
     score_log = models.CharField(max_length=200, null=True)
     complete = models.BooleanField(default=False)
@@ -273,3 +273,32 @@ def calculate_score(game_round_user):
 
 def calculate_scaled_score(score, brightness):
     return (100 - brightness) * score
+
+
+def determine_winner(game_round):
+    all_gru = GameRoundUser.objects.filter(game_round=game_round)
+
+    user_points = dict()
+    bottom_number = 0
+    top_number = 0
+
+    begin_number = 0
+
+    # only set here once, so score will increment with each player.
+    scaled_score = 0
+
+    for game_round_user in all_gru:
+
+        for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
+            scaled_score += calculate_scaled_score(grut.score, grut.brightness)
+
+        user_points[game_round_user.id] = (begin_number, scaled_score)
+        begin_number = scaled_score + 1
+        top_number=scaled_score
+
+    winning_number = random.randint(bottom_number,top_number)
+
+    for key, value in user_points.items():
+
+        if value[0] <= winning_number <=value[1]:
+            return key
