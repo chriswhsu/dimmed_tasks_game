@@ -161,13 +161,15 @@ $(document).ready(function () {
         var tps = 100;
 
         function slice(segment, loop) {
+            // on the first pass pull the pie slice out.
             setTimeout(function () {
                 piechart.series[0].data[segment].slice()
             }, tps * (qq + 1) + (loop * segments * tps));
 
+            // Then push it back in delayed somewhat by the total percentage of points they have.
             setTimeout(function () {
                 piechart.series[0].data[segment].slice()
-            }, tps * (qq + 1) + (loop * segments * tps) + 200);
+            }, tps * (qq + 1) + (loop * segments * tps) + 50 * piechart.series[0].data[segment].percentage);
         }
 
         for (var x = 0; x < 10; x++) {
