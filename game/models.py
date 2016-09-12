@@ -41,9 +41,9 @@ class GamePlanTask(models.Model):
     task_type = models.ForeignKey(TaskType)
     sequence = models.IntegerField()
     task_duration_seconds = models.IntegerField(null=True)
-    user_defined_dim = models.BooleanField()
-    dim_percent = models.FloatField(blank=True, null=True, validators=[MaxValueValidator(99),
-                                                                       MinValueValidator(0)
+    user_defined_brightness = models.BooleanField()
+    brightness = models.FloatField(blank=True, null=True, validators=[MaxValueValidator(100),
+                                                                       MinValueValidator(1)
                                                                        ])
 
 
@@ -147,8 +147,8 @@ class GameRoundUserTask(models.Model):
     game_round_task = models.ForeignKey(GameRoundTask)
     sequence = models.IntegerField()  # yes, denormalized.
     start_time = models.DateTimeField(null=True)
-    dim_percent = models.FloatField(null=True, validators=[MaxValueValidator(99),
-                                                           MinValueValidator(0)
+    brightness = models.FloatField(null=True, validators=[MaxValueValidator(100),
+                                                           MinValueValidator(1)
                                                            ])
     score = models.IntegerField(null=True)
     score_log = models.CharField(max_length=200, null=True)
@@ -175,10 +175,10 @@ class QuestionChoice(models.Model):
 # =========================================================================================================
 
 
-def derive_fake_user_dim(other_users_dim_percent):
-    return round(random.triangular(max(min(other_users_dim_percent) - 10, 0),
-                                   min(max(other_users_dim_percent) + 10, 95),
-                                   mean(other_users_dim_percent)))
+def derive_fake_user_brightness(other_users_brightness):
+    return round(random.triangular(max(min(other_users_brightness) - 10, 0),
+                                   min(max(other_users_brightness) + 10, 95),
+                                   mean(other_users_brightness)))
 
 
 def derive_fake_user_score(other_users_score):
@@ -187,17 +187,17 @@ def derive_fake_user_score(other_users_score):
                                    mean(other_users_score)))
 
 
-def build_fake_grut_scores_and_dim(game_round_task):
+def build_fake_grut_scores_and_brightness(game_round_task):
     # get all the real user completed task
     game_round_user_tasks = GameRoundUserTask.objects.filter(game_round_task=game_round_task, game_round_user__fake_user__isnull=True)
 
     scores = []
-    dims = []
+    brigthnesses = []
 
-    # and get the total scores and average dim levels
+    # and get the total scores and average brightness levels
     for grut in game_round_user_tasks:
         scores.append(grut.score)
-        dims.append(grut.dim_percent)
+        brigthnesses.append(grut.brightness)
 
     # get all the fake users
     game_round_users = GameRoundUser.objects.filter(game_round=game_round_task.game_round,
@@ -208,11 +208,11 @@ def build_fake_grut_scores_and_dim(game_round_task):
         # get the preciously created fake user task.
         grfut = GameRoundUserTask.objects.get(game_round_task=game_round_task, game_round_user=gru)
 
-        # populate dim_percent based on real user choices, if not prepopulated
-        if not grfut.dim_percent:
-            grfut.dim_percent = derive_fake_user_dim(dims)
+        # populate brightness based on real user choices, if not prepopulated
+        if not grfut.brightness:
+            grfut.brightness = derive_fake_user_brightness(brigthnesses)
 
-        # populate dim_percent based on real user scores, if not prepopulated
+        # populate brightness based on real user scores, if not prepopulated
         if not grfut.score:
             grfut.score = derive_fake_user_score(scores)
 
@@ -271,5 +271,5 @@ def calculate_score(game_round_user):
     return score
 
 
-def calculate_scaled_score(score, dim_percent):
-    return dim_percent * score
+def calculate_scaled_score(score, brightness):
+    return (100 - brightness) * score

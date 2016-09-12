@@ -36,7 +36,7 @@
         {% endif %}
 
 
-        {% if show_user_dim == True %}
+        {% if show_user_brightness == True %}
 
             <div class="text-center">
                 Please Choose Brightness Level:<br>
@@ -44,12 +44,12 @@
                 <input type='button' class="btn btn-default" value='Go!' id='get_going'/>
             </div>
 
-        {% elif show_user_dim == False %}
-            This task has been preset to be dimmed to {{ dim_percent }} percent.
-            <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="99" data-slider-enabled="false" data-slider-step="1" data-slider-value="{{ dim_percent }}"/>
+        {% elif show_user_brightness == False %}
+            This task has been preset to {{ brightness }} percent bright.
+            <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="99" data-slider-enabled="false" data-slider-step="1" data-slider-value="{{ brightness }}"/>
             <input type='button' class="btn btn-default" value='Go!' id='get_going'/>
         {% else %}
-            <div class="hidden" id="dim_level">{{ dim_level }}</div>
+            <div class="hidden" id="brightness_level">{{ brightness_level }}</div>
         {% endif %}
 
 
@@ -61,7 +61,7 @@
         <div class="black">
             <div id="screen">
                 {% block game %}
-                    {% if show_user_dim == True %}
+                    {% if show_user_brightness == True %}
                         <div class="text-center" id="sample_div">
                             <h3 class="text-white">Sample Text and Image</h3>
                             <img id="sample_image" src="{% static 'game/images/sample.gif' %}" width="600"/>

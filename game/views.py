@@ -88,31 +88,31 @@ def start_game(request, game_round_user_id):
     grut, created = GameRoundUserTask.objects.get_or_create(game_round_user=gru,
                                                             game_round_task=grt,
                                                             sequence=grt.sequence,
-                                                            defaults={'start_time': dth.now_cur_tz(), 'dim_percent': grt.game_plan_task.dim_percent})
+                                                            defaults={'start_time': dth.now_cur_tz(), 'brightness': grt.game_plan_task.brightness})
     grut.save()
 
-    if not grt.game_plan_task.dim_percent:
-        dim_percent = 0
+    if not grt.game_plan_task.brightness:
+        brightness = 0
     else:
-        dim_percent = grt.game_plan_task.dim_percent
+        brightness = grt.game_plan_task.brightness
 
     # check to see if all users in this game round have completed the prior task
 
-    return render(request, 'run_game.html', {'show_user_dim': grt.game_plan_task.user_defined_dim,
-                                             'dim_percent': dim_percent,
+    return render(request, 'run_game.html', {'show_user_brightness': grt.game_plan_task.user_defined_brightness,
+                                             'brightness': brightness,
                                              'started': True,
                                              'game_round_user_task': grut})
 
 
-def get_going(request, game_round_user_task_id, dim_percent):
+def get_going(request, game_round_user_task_id, brightness):
     # username = request.user.username
     # user = User.objects.get(username=username)
 
-    # Update with start time and dim percentage.
+    # Update with start time and brightness.
     grut = GameRoundUserTask.objects.get(pk=game_round_user_task_id)
 
     grut.start_time = dth.now_cur_tz()
-    grut.dim_percent = int(dim_percent)
+    grut.brightness = int(brightness)
     grut.save()
 
     # check to see if all users in this game round have completed the prior task
@@ -121,7 +121,7 @@ def get_going(request, game_round_user_task_id, dim_percent):
 
         grtq = GameRoundTaskQuestion.objects.get(game_round_task=grut.game_round_task, question_sequence=1)
 
-        return render(request, grut.game_round_task.game_plan_task.task_type.url, {'dim_level': grut.dim_percent / 100,
+        return render(request, grut.game_round_task.game_plan_task.task_type.url, {'brightness_level': grut.brightness / 100,
                                                                                    'started': True,
                                                                                    'game_round_user_task': grut,
                                                                                    'question':grtq.question,
@@ -130,7 +130,7 @@ def get_going(request, game_round_user_task_id, dim_percent):
 
     else:
 
-        return render(request, grut.game_round_task.game_plan_task.task_type.url, {'dim_level': grut.dim_percent / 100,
+        return render(request, grut.game_round_task.game_plan_task.task_type.url, {'brightness_level': grut.brightness / 100,
                                                                                'started': True,
                                                                                'game_round_user_task': grut,})
 
@@ -163,7 +163,7 @@ def continue_game(request, game_round_user_task_id):
 
             user_count = GameRoundUser.objects.filter(game_round=gr).count()
 
-            md.build_fake_grut_scores_and_dim(grt)
+            md.build_fake_grut_scores_and_brightness(grt)
 
             return render(request, 'run_game.html', {'continued': True,
                                                      'game_plan': gp,
@@ -175,7 +175,7 @@ def continue_game(request, game_round_user_task_id):
 
         else:
             return render(request, 'wait.html', {'started': True,
-                                                 'dim_level': 0,
+                                                 'brightness_level': 0,
                                                  'game_plan': gp,
                                                  'game_round': gr,
                                                  'game_round_user': gru,
@@ -183,7 +183,7 @@ def continue_game(request, game_round_user_task_id):
                                                  'game_round_user_task': grut})
     else:
 
-        md.build_fake_grut_scores_and_dim(grt)
+        md.build_fake_grut_scores_and_brightness(grt)
 
         return render(request, 'round_over.html', {'game_plan': gp,
                                                    'game_round': gr,
@@ -363,7 +363,7 @@ def get_comparison_points_ajax(request):
 
                 user_points = dict()
                 for game_round_user_task in all_grut:
-                    scaled_score = md.calculate_scaled_score(game_round_user_task.score, game_round_user_task.dim_percent)
+                    scaled_score = md.calculate_scaled_score(game_round_user_task.score, game_round_user_task.brightness)
 
                     if game_round_user_task.game_round_user.user:
                         if game_round_user_task.game_round_user.user.username == username:
@@ -377,7 +377,7 @@ def get_comparison_points_ajax(request):
 
                     user_points[uname] = [its_me,
                                           scaled_score,
-                                          game_round_user_task.dim_percent]
+                                          game_round_user_task.brightness]
 
                 # sort the dictionary by point score.
                 sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))
@@ -413,9 +413,9 @@ def get_summary_points_ajax(request):
                     scaled_score = 0
 
                     for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
-                        scaled_score += md.calculate_scaled_score(grut.score, grut.dim_percent)
+                        scaled_score += md.calculate_scaled_score(grut.score, grut.brightness)
 
-                    avg_dim = round(GameRoundUserTask.objects.filter(game_round_user=game_round_user).aggregate(Avg('dim_percent'))["dim_percent__avg"], 1)
+                    brightness = round(GameRoundUserTask.objects.filter(game_round_user=game_round_user).aggregate(Avg('brightness'))["brightness__avg"], 1)
 
                     if game_round_user.user:
                         if game_round_user.user.username == username:
@@ -429,7 +429,7 @@ def get_summary_points_ajax(request):
 
                     user_points[uname] = [its_me,
                                           scaled_score,
-                                          avg_dim]
+                                          brightness]
 
                 # sort the dictionary by point score.
                 sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))

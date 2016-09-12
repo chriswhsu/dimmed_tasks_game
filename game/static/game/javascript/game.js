@@ -44,10 +44,10 @@ $(document).ready(function () {
                 text: ''
             },
             yAxis: {
-                title: {text: 'Dimmed Pct'}
+                title: {text: 'Brightness'}
             },
             xAxis: {
-                categories: ['Dimmed Pct'],
+                categories: ['Brightness'],
                 labels: {
                     style: {
                         fontSize: '20px',
@@ -126,8 +126,8 @@ $(document).ready(function () {
         BuildPointChart();
     }
 
-    function set_dim(dim_level) {
-        var dl = (dim_level);
+    function set_brightness(brightness_level) {
+        var dl = (brightness_level);
         $('#screen').css({opacity: dl, 'width': $(document).width(), 'height': $(document).height()});
 
 
@@ -135,33 +135,55 @@ $(document).ready(function () {
 
     function get_going(clicks) {
 
-        window.location.href = '/game/get_going/' + $("#game_round_user_task_id").text() + '/' + dim_percentage;
+        window.location.href = '/game/get_going/' + $("#game_round_user_task_id").text() + '/' + bright_percentage;
     }
 
 
     $("#ex1").on("slide", function (slideEvt) {
-        set_dim(slideEvt.value / 100);
+        set_brightness(slideEvt.value / 100);
     });
 
     $('#get_going').click(get_going);
 
 
-    var dim_percentage;
-    var dim_pct = $('#ex1').slider({
+    var bright_percentage;
+    var bright_pct = $('#ex1').slider({
         formatter: function (value) {
-            dim_percentage = value;
+            bright_percentage = value;
             return 'Brightness: ' + value + '%';
         }
     });
 
 
+    function animate_slices() {
+
+        var segments = piechart.series[0].data.length;
+        var tps = 100;
+
+        function slice(segment, loop) {
+            setTimeout(function () {
+                piechart.series[0].data[segment].slice()
+            }, tps * (qq + 1) + (loop * segments * tps));
+
+            setTimeout(function () {
+                piechart.series[0].data[segment].slice()
+            }, tps * (qq + 1) + (loop * segments * tps) + 200);
+        }
+
+        for (var x = 0; x < 10; x++) {
+            for (var qq = 0; qq < segments; qq++) {
+                slice(qq, x)
+
+            }
+        }
+    }
+
+
     $('#button').click(function () {
-        BuildSummaryChart();
+        BuildSummaryChart(animate_slices);
     });
 
-    function BuildSummaryChart() {
-
-
+    if ($('#piechart').length) {
         var piechart = new Highcharts.Chart({
             chart: {
                 renderTo: 'piechart',
@@ -172,7 +194,7 @@ $(document).ready(function () {
                 width: 500
             },
             title: {
-                text: 'Points for Each User'
+                text: '% of Total Points by User'
             },
             tooltip: {
                 pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -193,26 +215,7 @@ $(document).ready(function () {
             series: [{
                 name: 'Users',
                 colorByPoint: true,
-                data: [{
-                    name: 'Microsoft IE',
-                    y: 56.33,
-                    sliced: true
-                }, {
-                    name: 'Chrome',
-                    y: 24.03
-                }, {
-                    name: 'Firefox',
-                    y: 10.38
-                }, {
-                    name: 'Safari',
-                    y: 4.77
-                }, {
-                    name: 'Opera',
-                    y: 0.91
-                }, {
-                    name: 'Unknown',
-                    y: 0.2
-                }]
+                data: []
             }]
         });
 
@@ -228,10 +231,10 @@ $(document).ready(function () {
                 text: ''
             },
             yAxis: {
-                title: {text: 'Dimmed Pct'}
+                title: {text: 'Brightness'}
             },
             xAxis: {
-                categories: ['Dimmed Pct'],
+                categories: ['Brightness'],
                 labels: {
                     style: {
                         fontSize: '20px',
@@ -244,21 +247,21 @@ $(document).ready(function () {
                 enabled: false
             }
         });
+    }
 
+
+    function BuildSummaryChart(callback) {
 
         var this_color;
         piechart.showLoading();
-
-        var data = {
-            'game_round_id': $("#game_round_id").text()
-        };
-
 
         $.ajax({
             type: 'POST',
             async: true,
             url: "/game/get_summary_points_ajax/",
-            data: JSON.stringify(data),
+            data: JSON.stringify({
+                'game_round_id': $("#game_round_id").text()
+            }),
             success: function (response) {
                 while (piechart.series.length) {
                     piechart.series[0].remove(redraw = false);
@@ -269,10 +272,13 @@ $(document).ready(function () {
                     my_arrary.push({name: key, y: response[key].slice(1, 2)[0]});
                 }
                 piechart.addSeries({
-                    'color': this_color,
                     'name': key,
                     'data': my_arrary
                 });
+
+                setTimeout(function () {
+                    callback()
+                }, 1000);
 
                 piechart.hideLoading();
 
@@ -296,18 +302,15 @@ $(document).ready(function () {
                     }
                 }
                 sum_pct_chart.hideLoading();
-
-
             }
         });
     }
 
     if ($('#piechart').length) {
-        BuildSummaryChart();
+        BuildSummaryChart(animate_slices);
     }
 
-
-    set_dim($("#dim_level").text());
+    set_brightness($("#brightness_level").text());
 
 
 });
