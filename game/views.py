@@ -21,7 +21,7 @@ from django.http import HttpResponse
 # Game page
 def index(request):
     game_rounds = GameRound.objects.filter(complete=False)
-    return render(request, "home.html", {'game_rounds': game_rounds})
+    return render(request, "active_game_rounds.html", {'game_rounds': game_rounds})
 
 
 def login(request):
@@ -36,7 +36,7 @@ def login(request):
                 logging.info("Login success: user=%s" % username)
                 return HttpResponseRedirect('/game/')
             else:
-                return render(request, 'home.html', {'login': "false"})
+                return render(request, 'active_game_rounds.html', {'login': "false"})
         except:
             logging.info("Error! Received HTTP POST method, but data is wrong.")
             return HttpResponse("Error! Received HTTP POST method, but data is wrong.")
@@ -370,10 +370,10 @@ def get_comparison_points_ajax(request):
                             its_me = True
                         else:
                             its_me = False
-                        uname = game_round_user_task.game_round_user.user.username
                     else:
                         its_me = False
-                        uname = game_round_user_task.game_round_user.fake_user.first_name + ' ' + game_round_user_task.game_round_user.fake_user.last_name + '.'
+
+                    uname = md.get_display_name(game_round_user_task.game_round_user)
 
                     user_points[uname] = [its_me,
                                           scaled_score,
@@ -425,10 +425,11 @@ def get_summary_points_ajax(request):
                             its_me = True
                         else:
                             its_me = False
-                        uname = game_round_user.user.username
+
                     else:
                         its_me = False
-                        uname = game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + '.'
+
+                    uname = md.get_display_name(game_round_user)
 
                     user_points[uname] = [its_me,
                                           scaled_score,

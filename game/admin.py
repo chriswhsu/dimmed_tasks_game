@@ -31,7 +31,7 @@ class GameRoundUserInLIne(admin.TabularInline):
 
 
 class GameRoundAdmin(admin.ModelAdmin):
-    list_display = ('name', 'game_plan', 'date_time', 'fake_user_count', 'complete')
+    list_display = ('name', 'game_plan', 'date_time', 'fake_user_count', 'allow_fake_users_to_win', 'complete')
     inlines = [GameRoundUserInLIne]
 
 
@@ -51,3 +51,5 @@ class GameRoundUserAdmin(admin.ModelAdmin):
 
 
 admin.site.register(GameRoundUser, GameRoundUserAdmin)
+
+admin.site.register(Player)

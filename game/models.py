@@ -5,8 +5,16 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-# Create your models here.
 from game.routines import first_names, last_initials
+
+
+class Player(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    building = models.CharField(max_length=50)
+    room = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.user.first_name + ' ' + self.user.last_name
 
 
 class FakeUser(models.Model):
@@ -54,6 +62,8 @@ class GameRound(models.Model):
     date_time = models.DateTimeField()
     complete = models.BooleanField(default=False)
     fake_user_count = models.IntegerField(default=0)
+    winning_game_round_user = models.ForeignKey("GameRoundUser", null=True, blank=True)
+    allow_fake_users_to_win = models.BooleanField()
 
     def __str__(self):
         return self.name
@@ -116,6 +126,13 @@ class GameRoundUser(models.Model):
     user = models.ForeignKey(User, null=True, blank=True)
     fake_user = models.ForeignKey(FakeUser, null=True, blank=True)
     game_round_task = models.ManyToManyField("GameRoundTask", through="GameRoundUserTask")
+
+    PRIVACY_CHOICES = (
+        ('P', 'Private'),
+        ('B', 'Building'),
+        ('R', 'Room')
+    )
+    privacy_choice = models.CharField(max_length=1, choices=PRIVACY_CHOICES, null=True, blank=True)
 
     def __str__(self):
 
@@ -276,29 +293,47 @@ def calculate_scaled_score(score, brightness):
 
 
 def determine_winner(game_round):
-    all_gru = GameRoundUser.objects.filter(game_round=game_round)
+    # check to see if a winner has already been assigned.
 
-    user_points = dict()
-    bottom_number = 0
-    top_number = 0
+    if game_round.winning_game_round_user:
+        return game_round.winning_game_round_user.pk
+    else:
 
-    begin_number = 0
+        if game_round.allow_fake_users_to_win:
+            all_gru = GameRoundUser.objects.filter(game_round=game_round)
+        else:
+            all_gru = GameRoundUser.objects.filter(game_round=game_round, fake_user__isnull=True)
 
-    # only set here once, so score will increment with each player.
-    scaled_score = 0
+        user_points = dict()
+        bottom_number = 0
+        top_number = 0
 
-    for game_round_user in all_gru:
+        begin_number = 0
 
-        for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
-            scaled_score += calculate_scaled_score(grut.score, grut.brightness)
+        # only set here once, so score will increment with each player.
+        scaled_score = 0
 
-        user_points[game_round_user.id] = (begin_number, scaled_score)
-        begin_number = scaled_score + 1
-        top_number=scaled_score
+        for game_round_user in all_gru:
 
-    winning_number = random.randint(bottom_number,top_number)
+            for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
+                scaled_score += calculate_scaled_score(grut.score, grut.brightness)
 
-    for key, value in user_points.items():
+            user_points[game_round_user.id] = (begin_number, scaled_score)
+            begin_number = scaled_score + 1
+            top_number = scaled_score
 
-        if value[0] <= winning_number <=value[1]:
-            return key
+        winning_number = random.randint(bottom_number, top_number)
+
+        for key, value in user_points.items():
+
+            if value[0] <= winning_number <= value[1]:
+                game_round.winning_game_round_user = GameRoundUser.objects.get(pk=key)
+                game_round.save()
+                return key
+
+
+def get_display_name(game_round_user):
+    if game_round_user.user:
+        return game_round_user.user.first_name + ' ' + game_round_user.user.last_name[0] + '.'
+    else:
+        return game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + '.'
