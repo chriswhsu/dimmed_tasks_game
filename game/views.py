@@ -397,6 +397,13 @@ def get_comparison_points_ajax(request):
         return HttpResponse("Only for ajax usage.")
 
 
+def ordinal(n):
+    if 10 <= n % 100 < 20:
+        return str(n) + 'th'
+    else:
+        return str(n) + {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, "th")
+
+
 @csrf_exempt
 def get_summary_points_ajax(request):
     if request.is_ajax():
@@ -443,7 +450,10 @@ def get_summary_points_ajax(request):
                                           brightness,
                                           game_round_user.id in winning_grus]
 
-                winning_text = '1st Place: ' + md.get_display_name(GameRoundUser.objects.get(pk=winning_grus[0]))
+                winning_text = ''
+
+                for idx, gru in enumerate(winning_grus):
+                    winning_text += ordinal(idx + 1) + ' Place: ' + md.get_display_name(GameRoundUser.objects.get(pk=gru)) + '<br />'
 
                 results = {'points': user_points, 'winners_text': winning_text}
 
