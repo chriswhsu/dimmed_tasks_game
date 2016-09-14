@@ -5,23 +5,27 @@ from collections import OrderedDict
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.db.models import Avg
+from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 import game.date_time_help as dth
 import game.models as md
-from game.models import GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask, QuestionChoice, GameRoundTaskQuestion
-
-# Create your views here.
-
-from django.http import HttpResponse
+from game.models import GameRound, GameRoundUser, GameRoundUserTask, GameRoundTask, QuestionChoice, GameRoundTaskQuestion, PrivacyChoice
 
 
 # Game page
 def index(request):
     game_rounds = GameRound.objects.filter(complete=False)
     return render(request, "active_game_rounds.html", {'game_rounds': game_rounds})
+
+
+def select_privacy(request, game_round_id):
+    gr = GameRound.objects.get(pk=game_round_id)
+    choices = PrivacyChoice.objects.all()
+
+    return render(request, "privacy.html", {'game_round': gr, 'choices': choices})
 
 
 def login(request):
@@ -60,7 +64,10 @@ def run_game(request, game_round_id, continued=False):
     username = request.user.username
     user = User.objects.get(username=username)
 
+    privacy_choice_id = request.POST.get('choice')
+
     game_round_user, created = GameRoundUser.objects.get_or_create(game_round=game_round, user=user)
+    game_round_user.privacy_choice = PrivacyChoice.objects.get(pk=privacy_choice_id)
     game_round_user.save()
 
     user_count = GameRoundUser.objects.filter(game_round=game_round).count()
@@ -124,15 +131,15 @@ def get_going(request, game_round_user_task_id, brightness):
         return render(request, grut.game_round_task.game_plan_task.task_type.url, {'brightness_level': grut.brightness / 100,
                                                                                    'started': True,
                                                                                    'game_round_user_task': grut,
-                                                                                   'question':grtq.question,
-                                                                                   'question_choices':grtq.question.questionchoice_set.all()
+                                                                                   'question': grtq.question,
+                                                                                   'question_choices': grtq.question.questionchoice_set.all()
                                                                                    })
 
     else:
 
         return render(request, grut.game_round_task.game_plan_task.task_type.url, {'brightness_level': grut.brightness / 100,
-                                                                               'started': True,
-                                                                               'game_round_user_task': grut,})
+                                                                                   'started': True,
+                                                                                   'game_round_user_task': grut, })
 
 
 def continue_game(request, game_round_user_task_id):
@@ -175,7 +182,7 @@ def continue_game(request, game_round_user_task_id):
 
         else:
             return render(request, 'wait.html', {'started': True,
-                                                 'brightness_level': 0,
+                                                 'brightness_level': 100,
                                                  'game_plan': gp,
                                                  'game_round': gr,
                                                  'game_round_user': gru,
@@ -409,7 +416,7 @@ def get_summary_points_ajax(request):
 
                 user_points = dict()
 
-                winning_gru = md.determine_winner(game_round=gr)
+                winning_grus = md.determine_winners(game_round=gr)
 
                 for game_round_user in all_gru:
 
@@ -434,13 +441,13 @@ def get_summary_points_ajax(request):
                     user_points[uname] = [its_me,
                                           scaled_score,
                                           brightness,
-                                          winning_gru == game_round_user.id]
+                                          game_round_user.id in winning_grus]
 
+                winning_text = '1st Place: ' + md.get_display_name(GameRoundUser.objects.get(pk=winning_grus[0]))
 
+                results = {'points': user_points, 'winners_text': winning_text}
 
-
-
-                json_response = json.dumps(user_points)
+                json_response = json.dumps(results)
                 return HttpResponse(json_response, content_type='application/json')
         else:
             return HttpResponse("Authenticated usage only.")

@@ -30,6 +30,11 @@ $(document).ready(function () {
             },
             legend: {
                 enabled: false
+            },
+            plotOptions: {
+                column: {
+                    minPointLength: 3
+                }
             }
         });
 
@@ -58,6 +63,11 @@ $(document).ready(function () {
             },
             legend: {
                 enabled: false
+            },
+            plotOptions: {
+                column: {
+                    minPointLength: 3
+                }
             }
         });
 
@@ -155,7 +165,7 @@ $(document).ready(function () {
     });
 
 
-    function animate_slices(win) {
+    function animate_slices(winners, winner_list) {
 
         var segments = piechart.series[0].data.length;
         var tps = 100;
@@ -167,7 +177,10 @@ $(document).ready(function () {
             }, tps * (segment + 1) + (loop * segments * tps));
 
             // Then push it back in delayed somewhat by the total percentage of points they have.
-            if (piechart.series[0].data[segment].name == win && loop == 9) {
+            if (jQuery.inArray(piechart.series[0].data[segment].name, winners) >= 0 && loop == 4) {
+                setTimeout(function () {
+                    set_winner(winner_list);
+                }, tps * (segment + 1) + (loop * segments * tps) + 500);
             }
             else {
                 setTimeout(function () {
@@ -176,13 +189,19 @@ $(document).ready(function () {
             }
         }
 
-        for (var x = 0; x < 10; x++) {
+        for (var x = 0; x < 5; x++) {
             for (var qq = 0; qq < segments; qq++) {
 
                 slice(qq, x)
 
             }
         }
+    }
+
+    function set_winner(winning_name) {
+
+        $('#winner').html(winning_name)
+
     }
 
 
@@ -252,6 +271,11 @@ $(document).ready(function () {
             },
             legend: {
                 enabled: false
+            },
+            plotOptions: {
+                column: {
+                    minPointLength: 3
+                }
             }
         });
     }
@@ -273,12 +297,12 @@ $(document).ready(function () {
                 while (piechart.series.length) {
                     piechart.series[0].remove(redraw = false);
                 }
-                var winner;
+                var winners = []
                 var my_arrary = [];
-                for (var key in response) {
-                    my_arrary.push({name: key, y: response[key].slice(1, 2)[0]})
-                    if (response[key].slice(3, 4)[0] == true) {
-                        winner = key;
+                for (var key in response.points) {
+                    my_arrary.push({name: key, y: response.points[key].slice(1, 2)[0]})
+                    if (response.points[key].slice(3, 4)[0] == true) {
+                        winners.push(key);
                     }
                 }
                 piechart.addSeries({
@@ -287,7 +311,7 @@ $(document).ready(function () {
                 });
 
                 setTimeout(function () {
-                    callback(winner)
+                    callback(winners, response.winners_text)
                 }, 1000);
 
                 piechart.hideLoading();
@@ -296,9 +320,9 @@ $(document).ready(function () {
                 while (sum_pct_chart.series.length) {
                     sum_pct_chart.series[0].remove(redraw = false);
                 }
-                for (var key in response) {
-                    if (response.hasOwnProperty(key)) {
-                        if (response[key].slice(0, 1) == 'true') {
+                for (var key in response.points) {
+                    if (response.points.hasOwnProperty(key)) {
+                        if (response.points[key].slice(0, 1) == 'true') {
                             this_color = 'blue'
                         }
                         else {
@@ -307,7 +331,7 @@ $(document).ready(function () {
                         sum_pct_chart.addSeries({
                             'color': this_color,
                             'name': key,
-                            'data': response[key].slice(2, 3)
+                            'data': response.points[key].slice(2, 3)
                         });
                     }
                 }

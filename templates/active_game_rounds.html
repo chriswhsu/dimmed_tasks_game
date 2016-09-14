@@ -12,7 +12,7 @@
             {% if user.is_authenticated %}
 
                 {% for gr in game_rounds %}
-                    <li><a href="/game/run_game/{{ gr.pk }}">{{ gr.name }}</a></li>
+                    <li><a href="/game/select_privacy/{{ gr.pk }}">{{ gr.name }}</a></li>
                 {% endfor %}
             {% else %}
 

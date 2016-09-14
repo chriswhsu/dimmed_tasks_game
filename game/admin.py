@@ -53,3 +53,5 @@ class GameRoundUserAdmin(admin.ModelAdmin):
 admin.site.register(GameRoundUser, GameRoundUserAdmin)
 
 admin.site.register(Player)
+
+admin.site.register(PrivacyChoice)
