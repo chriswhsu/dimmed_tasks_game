@@ -311,9 +311,9 @@ def determine_winners(game_round):
         for x in range(game_round.number_of_winners):
 
             if game_round.allow_fake_users_to_win:
-                all_gru = GameRoundUser.objects.filter(game_round=game_round).exclude(pk__in = winner_gru_ids)
+                all_gru = GameRoundUser.objects.filter(game_round=game_round).exclude(pk__in=winner_gru_ids)
             else:
-                all_gru = GameRoundUser.objects.filter(game_round=game_round, fake_user__isnull=True).exclude(pk__in = winner_gru_ids)
+                all_gru = GameRoundUser.objects.filter(game_round=game_round, fake_user__isnull=True).exclude(pk__in=winner_gru_ids)
 
             user_points = dict()
             bottom_number = 0
@@ -338,7 +338,8 @@ def determine_winners(game_round):
             for key, value in user_points.items():
 
                 if value[0] <= winning_number <= value[1]:
-                    Winner(game_round_user=GameRoundUser.objects.get(pk=key), game_round=game_round, place=1)
+                    win = Winner(game_round_user=GameRoundUser.objects.get(pk=key), game_round=game_round, place=x + 1)
+                    win.save()
 
                     winner_gru_ids.append(key)
         return winner_gru_ids
