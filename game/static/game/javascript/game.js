@@ -180,7 +180,7 @@ $(document).ready(function () {
             if (jQuery.inArray(piechart.series[0].data[segment].name, winners) >= 0 && loop == 4) {
                 setTimeout(function () {
                     set_winner(winner_list);
-                }, tps * (segment + 1) + (loop * segments * tps) + 500);
+                }, tps * (segment + 1) + (loop * segments * tps) + 5000);
             }
             else {
                 setTimeout(function () {
@@ -217,7 +217,7 @@ $(document).ready(function () {
                 plotBorderWidth: null,
                 plotShadow: false,
                 type: 'pie',
-                width: 500
+                width: 800
             },
             title: {
                 text: '% of Total Points by User'
