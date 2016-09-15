@@ -281,3 +281,14 @@ last_initials = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'
 
 def random_first_last():
     return random.choice(first_names) + ' ' + random.choice(last_initials) + '.'
+
+
+buildings = ['Cory', 'Soda', 'Sutardja Dai', 'Davis']
+
+
+def random_building():
+    return random.choice(buildings)
+
+
+def random_room():
+    return random.randint(101,900)

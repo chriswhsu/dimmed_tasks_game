@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from game.routines import first_names, last_initials
+from game.routines import first_names, last_initials, random_building, random_room
 
 
 class Player(models.Model):
@@ -20,6 +20,8 @@ class Player(models.Model):
 class FakeUser(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=1)
+    building = models.CharField(max_length=50)
+    room = models.CharField(max_length=50)
 
     def __str__(self):
         return self.first_name + ' ' + self.last_name
@@ -116,11 +118,11 @@ class GameRound(models.Model):
 
             for x in range(self.fake_user_count):
                 # create the appropriate number of fake users
-                fu = FakeUser(first_name=random.choice(first_names), last_name=random.choice(last_initials))
+                fu = FakeUser(first_name=random.choice(first_names), last_name=random.choice(last_initials), building=random_building(), room=random_room())
                 fu.save()
 
                 # and fake GameRoundUsers
-                grfu = GameRoundUser(fake_user=fu, game_round=self)
+                grfu = GameRoundUser(fake_user=fu, game_round=self,privacy_choice=PrivacyChoice(pk=random.randint(1,3)))
                 grfu.save()
 
                 for y in GameRoundTask.objects.filter(game_round=self):
@@ -304,9 +306,10 @@ def calculate_scaled_score(score, brightness):
 def determine_winners(game_round):
     # check to see if a winner has already been assigned.
     winner_gru_ids = []
-    winners = Winner.objects.filter(game_round=game_round).count()
-    if winners:
-        return winners
+    winners = Winner.objects.filter(game_round=game_round)
+    if winners.count():
+        return [x.game_round_user.pk for x in winners]
+
     else:
         for x in range(game_round.number_of_winners):
 
@@ -347,6 +350,17 @@ def determine_winners(game_round):
 
 def get_display_name(game_round_user):
     if game_round_user.user:
-        return game_round_user.user.first_name + ' ' + game_round_user.user.last_name[0] + '.'
+        if game_round_user.privacy_choice.id == 1:
+            return game_round_user.user.first_name + ' ' + game_round_user.user.last_name[0] + ''
+        elif game_round_user.privacy_choice.id == 2:
+            return game_round_user.user.first_name + ' ' + game_round_user.user.last_name[0] + '@' + game_round_user.user.player.building
+        elif game_round_user.privacy_choice.id == 3:
+            return game_round_user.user.first_name + ' ' + game_round_user.user.last_name[0] + '@' + game_round_user.user.player.room + ' ' + game_round_user.user.player.building
+
     else:
-        return game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + '.'
+        if game_round_user.privacy_choice.id == 1:
+            return game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + ''
+        elif game_round_user.privacy_choice.id == 2:
+            return game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + '@' + game_round_user.fake_user.building
+        elif game_round_user.privacy_choice.id == 3:
+            return game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + '@' + game_round_user.fake_user.room + ' ' + game_round_user.fake_user.building

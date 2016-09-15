@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block javascript %}
+    <script src="{% static 'game/javascript/memory.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+    <div>
+        <ul>
+
+            {% if user.is_authenticated %}
+
+                <h1>Please select your Privacy Level:</h1>
+
+                {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+                <form action="{% url 'run_game' game_round.id %}" method="post">
+                    {% csrf_token %}
+                    {% for choice in choices %}
+                        <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}"/>
+                        <label for="choice{{ forloop.counter }}">{{ choice.privacy_level }}</label><br/>
+                    {% endfor %}
+                    <input type="submit" value="Submit"/>
+                </form>
+            {% else %}
+
+            {% endif %}
+
+
+        </ul>
+    </div>
+{% endblock %}
