@@ -190,13 +190,13 @@ class GameRoundUserTask(models.Model):
 
 
 class Question(models.Model):
-    question_text = models.CharField(max_length=500)
+    question_text = models.CharField(max_length=1000)
 
 
 class QuestionChoice(models.Model):
     question = models.ForeignKey(Question)
     choice_code = models.CharField(max_length=1)
-    choice_text = models.CharField(max_length=400)
+    choice_text = models.CharField(max_length=1000)
     correct_choice = models.BooleanField()
 
 
