@@ -58,6 +58,11 @@
         <div class="hidden" id="game_round_task_id">{{ game_round_task.id }}</div>
         <div class="hidden" id="game_round_user_task_id">{{ game_round_user_task.id }}</div>
 
+        {% if active_game_play == True %}
+            <div class="hidden" id="seconds_left">{{ seconds_left }}</div>
+            <h3 class="text-danger text-center">Task ends in <span id="time"></span>!</h3>
+        {% endif %}
+
         <div class="black">
             <div id="screen">
                 {% block game %}

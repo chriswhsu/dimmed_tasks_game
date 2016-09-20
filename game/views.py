@@ -17,7 +17,10 @@ from game.models import GameRound, GameRoundUser, GameRoundUserTask, GameRoundTa
 
 # Game page
 def index(request):
-    game_rounds = GameRound.objects.filter(complete=False)
+    username = request.user.username
+    user = User.objects.get(username=username)
+
+    game_rounds = GameRound.objects.filter(complete=False, gamerounduser__user=user)
     return render(request, "active_game_rounds.html", {'game_rounds': game_rounds})
 
 
@@ -95,7 +98,7 @@ def start_game(request, game_round_user_id):
     grut, created = GameRoundUserTask.objects.get_or_create(game_round_user=gru,
                                                             game_round_task=grt,
                                                             sequence=grt.sequence,
-                                                            defaults={'start_time': dth.now_cur_tz(), 'brightness': grt.game_plan_task.brightness})
+                                                            defaults={'brightness': grt.game_plan_task.brightness})
     grut.save()
 
     if not grt.game_plan_task.brightness:
@@ -118,7 +121,8 @@ def get_going(request, game_round_user_task_id, brightness):
     # Update with start time and brightness.
     grut = GameRoundUserTask.objects.get(pk=game_round_user_task_id)
 
-    grut.start_time = dth.now_cur_tz()
+    if not grut.start_time:
+        grut.start_time = dth.now_cur_tz()
     grut.brightness = int(brightness)
     grut.save()
 
@@ -128,18 +132,24 @@ def get_going(request, game_round_user_task_id, brightness):
 
         grtq = GameRoundTaskQuestion.objects.get(game_round_task=grut.game_round_task, question_sequence=1)
 
-        return render(request, grut.game_round_task.game_plan_task.task_type.url, {'brightness_level': grut.brightness / 100,
-                                                                                   'started': True,
-                                                                                   'game_round_user_task': grut,
-                                                                                   'question': grtq.question,
-                                                                                   'question_choices': grtq.question.questionchoice_set.all()
-                                                                                   })
+        return render(request, grut.game_round_task.game_plan_task.task_type.url, {
+            'seconds_left': max(grut.game_round_task.game_plan_task.task_duration_seconds - (dth.now_cur_tz() - grut.start_time).total_seconds(), 0),
+            'brightness_level': grut.brightness / 100,
+            'started': True,
+            'active_game_play': True,
+            'game_round_user_task': grut,
+            'question': grtq.question,
+            'question_choices': grtq.question.questionchoice_set.all()
+        })
 
     else:
 
-        return render(request, grut.game_round_task.game_plan_task.task_type.url, {'brightness_level': grut.brightness / 100,
-                                                                                   'started': True,
-                                                                                   'game_round_user_task': grut, })
+        return render(request, grut.game_round_task.game_plan_task.task_type.url, {
+            'seconds_left': max(grut.game_round_task.game_plan_task.task_duration_seconds - (dth.now_cur_tz() - grut.start_time).total_seconds(), 0),
+            'brightness_level': grut.brightness / 100,
+            'started': True,
+            'active_game_play': True,
+            'game_round_user_task': grut, })
 
 
 def continue_game(request, game_round_user_task_id):
@@ -178,6 +188,7 @@ def continue_game(request, game_round_user_task_id):
                                                      'game_round_user': gru,
                                                      'game_round_task': grt,
                                                      'game_round_user_task': grut,
+                                                     'active_game_play': False,
                                                      'user_count': user_count})
 
         else:
@@ -187,7 +198,8 @@ def continue_game(request, game_round_user_task_id):
                                                  'game_round': gr,
                                                  'game_round_user': gru,
                                                  'game_round_task': grt,
-                                                 'game_round_user_task': grut})
+                                                 'game_round_user_task': grut,
+                                                 'active_game_play': False})
     else:
 
         md.build_fake_grut_scores_and_brightness(grt)
@@ -196,7 +208,8 @@ def continue_game(request, game_round_user_task_id):
                                                    'game_round': gr,
                                                    'game_round_user': gru,
                                                    'game_round_task': grt,
-                                                   'game_round_user_task': grut})
+                                                   'game_round_user_task': grut,
+                                                   'active_game_play': False})
 
 
 # This is used by single interation games like tetris and 2048.
@@ -243,11 +256,19 @@ def get_question_and_choices_ajax(request):
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
 
                     question_id = data['question_id']
-                    answer_code = data['answer_code']
+                    answer_code = ''
+                    try:
+                        answer_code = data['answer_code']
+                    except KeyError:
+                        pass
 
                     grtq_sequence = GameRoundTaskQuestion.objects.get(question_id=question_id, game_round_task=grut.game_round_task).question_sequence
 
-                    correct = QuestionChoice.objects.filter(question_id=question_id, choice_code=answer_code, correct_choice=True).count()
+                    if answer_code:
+
+                        correct = QuestionChoice.objects.filter(question_id=question_id, choice_code=answer_code, correct_choice=True).count()
+                    else:
+                        correct = 0
 
                     duration = grut.game_round_task.game_plan_task.task_duration_seconds
 
@@ -307,7 +328,6 @@ def next_iteration_ajax(request):
             if request.method == 'POST':
                 try:
                     data = json.loads(request.body.decode())
-                    clicks = data['clicks']
 
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
 
@@ -323,13 +343,9 @@ def next_iteration_ajax(request):
                         grut.complete = False
 
                     if not grut.score:
-
                         grut.score = 1
-                        grut.score_log = str(clicks)
-
                     else:
                         grut.score += 1
-                        grut.score_log = grut.score_log + ',' + str(clicks)
 
                     grut.save()
 

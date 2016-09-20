@@ -51,7 +51,7 @@ class GamePlanTask(models.Model):
     task_type = models.ForeignKey(TaskType)
     sequence = models.IntegerField()
     task_duration_seconds = models.IntegerField(null=True)
-    user_defined_brightness = models.BooleanField()
+    user_defined_brightness = models.BooleanField(default=True)
     brightness = models.FloatField(blank=True, null=True, validators=[MaxValueValidator(100),
                                                                       MinValueValidator(1)
                                                                       ])

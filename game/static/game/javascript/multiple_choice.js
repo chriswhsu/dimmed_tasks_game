@@ -47,5 +47,12 @@ $(document).ready(function () {
     });
 
 
+    function time_expired() {
+        get_question_and_choices_ajax()
+    }
+
+    window.time_expired = time_expired
+
+
 });
 

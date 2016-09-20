@@ -297,3 +297,11 @@ function end_game(score) {
         }
     });
 }
+
+    function time_expired() {
+        //    pass -1 to let backend know the task-iteration wasn't completed.
+        var send_score = this.score;
+        end_game(send_score)
+    }
+
+

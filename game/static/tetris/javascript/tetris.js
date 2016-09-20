@@ -507,6 +507,12 @@ function end_game(p_score) {
 }
 
 
+    function time_expired() {
+        //    pass -1 to let backend know the task-iteration wasn't completed.
+        end_game(score);
+    }
+
+
 //-------------------------------------------------------------------------
 // FINALLY, lets run the game
 //-------------------------------------------------------------------------
