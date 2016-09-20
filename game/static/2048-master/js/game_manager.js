@@ -293,15 +293,14 @@ function end_game(score) {
             window.location.href = '/game/continue_game/' + $("#game_round_user_task_id").text();
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            alert("#next_iteration_ajax: jqXHR= " + jqXHR.status + " " + jqXHR.readyState + ", textStatus= " + textStatus + ", errorThrown= " + errorThrown)
+            alert("#end_game: jqXHR= " + jqXHR.status + " " + jqXHR.readyState + ", textStatus= " + textStatus + ", errorThrown= " + errorThrown)
         }
     });
 }
 
-    function time_expired() {
-        //    pass -1 to let backend know the task-iteration wasn't completed.
-        var send_score = this.score;
-        end_game(send_score)
-    }
+function time_expired() {
+    var send_score = this.score;
+    end_game(send_score)
+}
 
 

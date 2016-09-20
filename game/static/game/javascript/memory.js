@@ -128,7 +128,7 @@ $(document).ready(function () {
         $.ajax({
             type: 'POST',
             async: true,
-            url: "/game/next_iteration_ajax/",
+            url: "/game/next_memory_iteration_ajax/",
             data: JSON.stringify(data),
             success: function (response) {
                 if (response.over) {
@@ -140,7 +140,7 @@ $(document).ready(function () {
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
-                alert("#next_iteration_ajax: jqXHR= " + jqXHR.status + " " + jqXHR.readyState + ", textStatus= " + textStatus + ", errorThrown= " + errorThrown)
+                alert("#next_memory_iteration_ajax: jqXHR= " + jqXHR.status + " " + jqXHR.readyState + ", textStatus= " + textStatus + ", errorThrown= " + errorThrown)
             }
         });
     }

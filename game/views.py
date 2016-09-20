@@ -322,7 +322,7 @@ def get_question_and_choices_ajax(request):
 
 # This is only used by the memory game.
 @csrf_exempt
-def next_iteration_ajax(request):
+def next_memory_iteration_ajax(request):
     if request.is_ajax():
         if request.user.is_authenticated():
             if request.method == 'POST':

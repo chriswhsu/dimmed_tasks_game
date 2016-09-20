@@ -217,7 +217,7 @@ $(document).ready(function () {
                 plotBorderWidth: null,
                 plotShadow: false,
                 type: 'pie',
-                width: 800
+                width: 1000
             },
             title: {
                 text: '% of Total Points by User'
@@ -245,39 +245,6 @@ $(document).ready(function () {
             }]
         });
 
-
-        var sum_pct_chart = new Highcharts.Chart({
-            chart: {
-                type: 'column',
-                renderTo: 'sum_pct_chart',
-                width: '500'
-
-            },
-            title: {
-                text: ''
-            },
-            yAxis: {
-                title: {text: 'Brightness'}
-            },
-            xAxis: {
-                categories: ['Brightness'],
-                labels: {
-                    style: {
-                        fontSize: '20px',
-                        fontFamily: 'Verdana, sans-serif'
-                    }
-                }
-
-            },
-            legend: {
-                enabled: false
-            },
-            plotOptions: {
-                column: {
-                    minPointLength: 3
-                }
-            }
-        });
     }
 
 
@@ -316,26 +283,6 @@ $(document).ready(function () {
 
                 piechart.hideLoading();
 
-
-                while (sum_pct_chart.series.length) {
-                    sum_pct_chart.series[0].remove(redraw = false);
-                }
-                for (var key in response.points) {
-                    if (response.points.hasOwnProperty(key)) {
-                        if (response.points[key].slice(0, 1) == 'true') {
-                            this_color = 'blue'
-                        }
-                        else {
-                            this_color = 'lightgrey'
-                        }
-                        sum_pct_chart.addSeries({
-                            'color': this_color,
-                            'name': key,
-                            'data': response.points[key].slice(2, 3)
-                        });
-                    }
-                }
-                sum_pct_chart.hideLoading();
             }
         });
     }

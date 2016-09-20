@@ -501,7 +501,7 @@ function end_game(p_score) {
             window.location.href = '/game/continue_game/' + $("#game_round_user_task_id").text();
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            alert("#next_iteration_ajax: jqXHR= " + jqXHR.status + " " + jqXHR.readyState + ", textStatus= " + textStatus + ", errorThrown= " + errorThrown)
+            alert("#end_game: jqXHR= " + jqXHR.status + " " + jqXHR.readyState + ", textStatus= " + textStatus + ", errorThrown= " + errorThrown)
         }
     });
 }
