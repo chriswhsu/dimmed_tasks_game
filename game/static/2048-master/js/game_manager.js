@@ -36,23 +36,16 @@ GameManager.prototype.setup = function () {
     var previousState = this.storageManager.getGameState();
 
     // Reload the game from a previous game if present
-    if (previousState) {
-        this.grid = new Grid(previousState.grid.size,
-            previousState.grid.cells); // Reload grid
-        this.score = previousState.score;
-        this.over = previousState.over;
-        this.won = previousState.won;
-        this.keepPlaying = previousState.keepPlaying;
-    } else {
-        this.grid = new Grid(this.size);
-        this.score = 0;
-        this.over = false;
-        this.won = false;
-        this.keepPlaying = false;
 
-        // Add the initial tiles
-        this.addStartTiles();
-    }
+    this.grid = new Grid(this.size);
+    this.score = 0;
+    this.over = false;
+    this.won = false;
+    this.keepPlaying = false;
+
+    // Add the initial tiles
+    this.addStartTiles();
+
 
     // Update the actuator
     this.actuate();
@@ -106,6 +99,7 @@ GameManager.prototype.actuate = function () {
 
 // Represent the current game as an object
 GameManager.prototype.serialize = function () {
+    window.score_2048 = this.score
     return {
         grid: this.grid.serialize(),
         score: this.score,
@@ -298,9 +292,10 @@ function end_game(score) {
     });
 }
 
-function time_expired() {
-    var send_score = this.score;
-    end_game(send_score)
-}
+GameManager.prototype.time_expired = function () {
+    var send_score = window.score_2048;
+    end_game(send_score);
+};
 
 
+time_expired = GameManager.prototype.time_expired;

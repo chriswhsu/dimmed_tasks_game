@@ -284,10 +284,10 @@ def get_question_and_choices_ajax(request):
                     # only count correct answers towards score.
                     if not grut.score:
 
-                        grut.score = correct
+                        grut.score = correct * 1000
 
                     else:
-                        grut.score += correct
+                        grut.score += correct * 1000
 
                     grut.save()
 
@@ -343,9 +343,10 @@ def next_memory_iteration_ajax(request):
                         grut.complete = False
 
                     if not grut.score:
-                        grut.score = 1
+                        # Thousand points per correct answer
+                        grut.score = 1000
                     else:
-                        grut.score += 1
+                        grut.score += 1000
 
                     grut.save()
 
@@ -378,15 +379,20 @@ def get_comparison_points_ajax(request):
                 grt_id = data['game_round_task_id']
 
                 grt = GameRoundTask.objects.get(pk=grt_id)
-
-                all_grut = GameRoundUserTask.objects.filter(game_round_task=grt)
+                all_gru = GameRoundUser.objects.filter(game_round=grt.game_round)
 
                 username = request.user.username
-                user = User.objects.get(username=username)
 
                 user_points = dict()
-                for game_round_user_task in all_grut:
-                    scaled_score = md.calculate_scaled_score(game_round_user_task.score, game_round_user_task.brightness)
+                # get all users for the game round
+                for gru in all_gru:
+                    scaled_score = 0
+
+                    # get all game round tasks for the user
+                    gruts = GameRoundUserTask.objects.filter(game_round_user=gru, complete=True)
+
+                    for game_round_user_task in gruts:
+                        scaled_score += md.calculate_scaled_score(game_round_user_task.score, game_round_user_task.brightness)
 
                     if game_round_user_task.game_round_user.user:
                         if game_round_user_task.game_round_user.user.username == username:
