@@ -329,6 +329,13 @@ def next_memory_iteration_ajax(request):
                 try:
                     data = json.loads(request.body.decode())
 
+                    clicks = data['clicks']
+
+                    if clicks == -1:
+                        it_score = 0
+                    else:
+                        it_score = 1000
+
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
 
                     duration = grut.game_round_task.game_plan_task.task_duration_seconds
@@ -344,9 +351,9 @@ def next_memory_iteration_ajax(request):
 
                     if not grut.score:
                         # Thousand points per correct answer
-                        grut.score = 1000
+                        grut.score = it_score
                     else:
-                        grut.score += 1000
+                        grut.score += it_score
 
                     grut.save()
 
