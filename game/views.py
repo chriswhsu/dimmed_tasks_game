@@ -290,10 +290,10 @@ def get_question_and_choices_ajax(request):
                     # only count correct answers towards score.
                     if not grut.score:
 
-                        grut.score = correct * 1000
+                        grut.score = correct * 100
 
                     else:
-                        grut.score += correct * 1000
+                        grut.score += correct * 100
 
                     grut.save()
 
@@ -340,7 +340,7 @@ def next_memory_iteration_ajax(request):
                     if clicks == -1:
                         it_score = 0
                     else:
-                        it_score = 1000
+                        it_score = 100
 
                     grut = GameRoundUserTask.objects.get(pk=data['grut_id'])
 

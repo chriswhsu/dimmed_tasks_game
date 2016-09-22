@@ -136,7 +136,7 @@ $(document).ready(function () {
                 }
                 else {
                     ResetGame();
-                    $('#clear_count').html(response.score + " Clears")
+                    $('#clear_count').html(response.score + " Points")
                 }
             },
             error: function (jqXHR, textStatus, errorThrown) {
