@@ -17,11 +17,16 @@ from game.models import GameRound, GameRoundUser, GameRoundUserTask, GameRoundTa
 
 # Game page
 def index(request):
-    username = request.user.username
-    user = User.objects.get(username=username)
+    if request.user.is_authenticated():
 
-    game_rounds = GameRound.objects.filter(complete=False, gamerounduser__user=user)
-    return render(request, "active_game_rounds.html", {'game_rounds': game_rounds})
+        username = request.user.username
+        user = User.objects.get(username=username)
+
+        game_rounds = GameRound.objects.filter(complete=False, gamerounduser__user=user)
+        return render(request, "active_game_rounds.html", {'game_rounds': game_rounds})
+
+    else:
+        return render(request, "active_game_rounds.html", {})
 
 
 def select_privacy(request, game_round_id):
@@ -102,7 +107,7 @@ def start_game(request, game_round_user_id):
     grut.save()
 
     if not grt.game_plan_task.brightness:
-        brightness = 0
+        brightness = 100
     else:
         brightness = grt.game_plan_task.brightness
 
@@ -111,7 +116,8 @@ def start_game(request, game_round_user_id):
     return render(request, 'run_game.html', {'show_user_brightness': grt.game_plan_task.user_defined_brightness,
                                              'brightness': brightness,
                                              'started': True,
-                                             'game_round_user_task': grut})
+                                             'game_round_user_task': grut,
+                                             'brightness_level': brightness / 100})
 
 
 def get_going(request, game_round_user_task_id, brightness):
@@ -123,7 +129,7 @@ def get_going(request, game_round_user_task_id, brightness):
 
     if not grut.start_time:
         grut.start_time = dth.now_cur_tz()
-    grut.brightness = int(brightness)
+    grut.brightness = float(brightness)
     grut.save()
 
     # check to see if all users in this game round have completed the prior task

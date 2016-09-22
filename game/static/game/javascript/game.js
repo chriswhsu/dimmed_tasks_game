@@ -136,10 +136,11 @@ $(document).ready(function () {
         BuildPointChart();
     }
 
-    function set_brightness(brightness_level) {
-        var dl = (brightness_level);
-        $('#screen').css({opacity: dl, 'width': $(document).width(), 'height': $(document).height()});
 
+
+    function set_brightness(brightness_level) {
+
+        $('#screen').css({opacity: brightness_level, 'width': $(document).width(), 'height': $(document).height()});
 
     }
 
@@ -148,20 +149,29 @@ $(document).ready(function () {
         window.location.href = '/game/get_going/' + $("#game_round_user_task_id").text() + '/' + bright_percentage;
     }
 
+    var bright_percentage = 100;
 
     $("#ex1").on("slide", function (slideEvt) {
-        set_brightness(slideEvt.value / 100);
+
+        var brightness_level = (slideEvt.value);
+
+        if (brightness_level <= 66) {
+            dl = brightness_level / 2
+        }
+        else {
+            dl = 32 + (2 * (brightness_level - 66));
+        }
+        bright_percentage = dl;
+        set_brightness(dl / 100);
     });
 
     $('#get_going').click(get_going);
 
 
-    var bright_percentage;
     var bright_pct = $('#ex1').slider({
         formatter: function (value) {
-            bright_percentage = value;
-            return 'Brightness: ' + value + '%';
         }
+
     });
 
 

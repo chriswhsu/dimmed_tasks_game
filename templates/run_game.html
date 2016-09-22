@@ -48,9 +48,9 @@
             This task has been preset to {{ brightness }} percent bright.
             <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="99" data-slider-enabled="false" data-slider-step="1" data-slider-value="{{ brightness }}"/>
             <input type='button' class="btn btn-default" value='Go!' id='get_going'/>
-        {% else %}
-            <div class="hidden" id="brightness_level">{{ brightness_level }}</div>
         {% endif %}
+
+        <div class="hidden" id="brightness_level">{{ brightness_level }}</div>
 
 
         <div class="hidden" id="game_plan_code">{{ game_plan.code }}</div>
