@@ -292,3 +292,17 @@ def random_building():
 
 def random_room():
     return random.randint(101,900)
+
+# not using right now
+def scale_brightness(input_brightness):
+
+    if input_brightness <= 66:
+        actual_brightness = input_brightness / 2
+
+    else:
+        actual_brightness = 32 + (2 * (input_brightness - 66))
+
+    return actual_brightness
+
+
+

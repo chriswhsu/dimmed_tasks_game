@@ -103,7 +103,7 @@ def start_game(request, game_round_user_id):
     grut, created = GameRoundUserTask.objects.get_or_create(game_round_user=gru,
                                                             game_round_task=grt,
                                                             sequence=grt.sequence,
-                                                            defaults={'brightness': grt.game_plan_task.brightness})
+                                                            defaults={'brightness_choice': grt.game_plan_task.brightness})
     grut.save()
 
     if not grt.game_plan_task.brightness:
@@ -120,7 +120,7 @@ def start_game(request, game_round_user_id):
                                              'brightness_level': brightness / 100})
 
 
-def get_going(request, game_round_user_task_id, brightness):
+def get_going(request, game_round_user_task_id, brightness_choice, actual_brightness):
     # username = request.user.username
     # user = User.objects.get(username=username)
 
@@ -129,7 +129,8 @@ def get_going(request, game_round_user_task_id, brightness):
 
     if not grut.start_time:
         grut.start_time = dth.now_cur_tz()
-    grut.brightness = float(brightness)
+    grut.brightness_choice = float(brightness_choice)
+    grut.actual_brightness = float(actual_brightness)
     grut.save()
 
     # check to see if all users in this game round have completed the prior task
@@ -140,7 +141,7 @@ def get_going(request, game_round_user_task_id, brightness):
 
         return render(request, grut.game_round_task.game_plan_task.task_type.url, {
             'seconds_left': max(grut.game_round_task.game_plan_task.task_duration_seconds - (dth.now_cur_tz() - grut.start_time).total_seconds(), 0),
-            'brightness_level': grut.brightness / 100,
+            'brightness_level': grut.actual_brightness / 100,
             'started': True,
             'active_game_play': True,
             'game_round_user_task': grut,
@@ -152,7 +153,7 @@ def get_going(request, game_round_user_task_id, brightness):
 
         return render(request, grut.game_round_task.game_plan_task.task_type.url, {
             'seconds_left': max(grut.game_round_task.game_plan_task.task_duration_seconds - (dth.now_cur_tz() - grut.start_time).total_seconds(), 0),
-            'brightness_level': grut.brightness / 100,
+            'brightness_level': grut.actual_brightness / 100,
             'started': True,
             'active_game_play': True,
             'game_round_user_task': grut, })
@@ -405,7 +406,7 @@ def get_comparison_points_ajax(request):
                     gruts = GameRoundUserTask.objects.filter(game_round_user=gru, complete=True)
 
                     for game_round_user_task in gruts:
-                        scaled_score += md.calculate_scaled_score(game_round_user_task.score, game_round_user_task.brightness)
+                        scaled_score += md.calculate_scaled_score(game_round_user_task.score, game_round_user_task.brightness_choice)
 
                     if game_round_user_task.game_round_user.user:
                         if game_round_user_task.game_round_user.user.username == username:
@@ -419,7 +420,7 @@ def get_comparison_points_ajax(request):
 
                     user_points[uname] = [its_me,
                                           scaled_score,
-                                          game_round_user_task.brightness]
+                                          game_round_user_task.brightness_choice]
 
                 # sort the dictionary by point score.
                 sorted_user_points = OrderedDict(sorted(user_points.items(), key=lambda e: e[1][1]))
@@ -465,9 +466,9 @@ def get_summary_points_ajax(request):
                     scaled_score = 0
 
                     for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
-                        scaled_score += md.calculate_scaled_score(grut.score, grut.brightness)
+                        scaled_score += md.calculate_scaled_score(grut.score, grut.brightness_choice)
 
-                    brightness = round(GameRoundUserTask.objects.filter(game_round_user=game_round_user).aggregate(Avg('brightness'))["brightness__avg"], 1)
+                    brightness = round(GameRoundUserTask.objects.filter(game_round_user=game_round_user).aggregate(Avg('brightness_choice'))["brightness_choice__avg"], 1)
 
                     if game_round_user.user:
                         if game_round_user.user.username == username:

@@ -122,7 +122,7 @@ class GameRound(models.Model):
                 fu.save()
 
                 # and fake GameRoundUsers
-                grfu = GameRoundUser(fake_user=fu, game_round=self,privacy_choice=PrivacyChoice(pk=random.randint(1,3)))
+                grfu = GameRoundUser(fake_user=fu, game_round=self, privacy_choice=PrivacyChoice(pk=random.randint(1, 3)))
                 grfu.save()
 
                 for y in GameRoundTask.objects.filter(game_round=self):
@@ -175,7 +175,11 @@ class GameRoundUserTask(models.Model):
     game_round_task = models.ForeignKey(GameRoundTask)
     sequence = models.IntegerField()  # yes, denormalized.
     start_time = models.DateTimeField(null=True)
-    brightness = models.FloatField(null=True, validators=[MaxValueValidator(100),
+    brightness_choice = models.FloatField(null=True, validators=[MaxValueValidator(100),
+                                                                 MinValueValidator(1)
+                                                                 ])
+
+    actual_brightness = models.FloatField(null=True, validators=[MaxValueValidator(100),
                                                           MinValueValidator(1)
                                                           ])
     score = models.IntegerField(null=True)
@@ -220,12 +224,12 @@ def build_fake_grut_scores_and_brightness(game_round_task):
     game_round_user_tasks = GameRoundUserTask.objects.filter(game_round_task=game_round_task, game_round_user__fake_user__isnull=True)
 
     scores = []
-    brigthnesses = []
+    brightnesses = []
 
     # and get the total scores and average brightness levels
     for grut in game_round_user_tasks:
         scores.append(grut.score)
-        brigthnesses.append(grut.brightness)
+        brightnesses.append(grut.brightness_choice)
 
     # get all the fake users
     game_round_users = GameRoundUser.objects.filter(game_round=game_round_task.game_round,
@@ -237,8 +241,8 @@ def build_fake_grut_scores_and_brightness(game_round_task):
         grfut = GameRoundUserTask.objects.get(game_round_task=game_round_task, game_round_user=gru)
 
         # populate brightness based on real user choices, if not prepopulated
-        if not grfut.brightness:
-            grfut.brightness = derive_fake_user_brightness(brigthnesses)
+        if not grfut.brightness_choice:
+            grfut.brightness_choice = derive_fake_user_brightness(brightnesses)
 
         # populate brightness based on real user scores, if not prepopulated
         if not grfut.score:
@@ -330,7 +334,7 @@ def determine_winners(game_round):
             for game_round_user in all_gru:
 
                 for grut in GameRoundUserTask.objects.filter(game_round_user=game_round_user):
-                    scaled_score += calculate_scaled_score(grut.score, grut.brightness)
+                    scaled_score += calculate_scaled_score(grut.score, grut.brightness_choice)
 
                 user_points[game_round_user.id] = (begin_number, scaled_score)
                 begin_number = scaled_score + 1
@@ -364,3 +368,4 @@ def get_display_name(game_round_user):
             return game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + '@' + game_round_user.fake_user.building
         elif game_round_user.privacy_choice.id == 3:
             return game_round_user.fake_user.first_name + ' ' + game_round_user.fake_user.last_name + '@' + game_round_user.fake_user.room + ' ' + game_round_user.fake_user.building
+

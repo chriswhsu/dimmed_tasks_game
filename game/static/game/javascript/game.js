@@ -146,10 +146,11 @@ $(document).ready(function () {
 
     function get_going(clicks) {
 
-        window.location.href = '/game/get_going/' + $("#game_round_user_task_id").text() + '/' + bright_percentage;
+        window.location.href = '/game/get_going/' + $("#game_round_user_task_id").text() + '/' + bright_choice + '/' + bright_percentage;
     }
 
     var bright_percentage = 100;
+    var bright_choice;
 
     $("#ex1").on("slide", function (slideEvt) {
 
@@ -161,6 +162,7 @@ $(document).ready(function () {
         else {
             dl = 32 + (2 * (brightness_level - 66));
         }
+        bright_choice = brightness_level;
         bright_percentage = dl;
         set_brightness(dl / 100);
     });
