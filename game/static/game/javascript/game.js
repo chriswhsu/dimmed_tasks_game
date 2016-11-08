@@ -150,7 +150,7 @@ $(document).ready(function () {
     }
 
     var bright_percentage = 100;
-    var bright_choice;
+    var bright_choice = 100;
 
     $("#ex1").on("slide", function (slideEvt) {
 
@@ -172,6 +172,7 @@ $(document).ready(function () {
 
     var bright_pct = $('#ex1').slider({
         formatter: function (value) {
+            return 'Brightness: ' + value + '%';
         }
 
     });
